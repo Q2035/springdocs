@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd"
+       default-autowire="no">
+
+    <bean id="user" class="com.test.chapter01.pojo.User" autowire-candidate="false">
+        <property name="name" value="HELLO,SPRING"/>
+    </bean>
+
+    <bean class="com.test.chapter01.pojo.JDBCPro">
+        <property name="user" value="${jdbc.user}"/>
+        <property name="pass" value="${jdbc.pass}"/>
+    </bean>
+
+    <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+        <property name="location" value="classpath:/hi.properties"/>
+    </bean>
+
+    <bean id="defaultServiceLocator"
+        class="com.test.chapter01.pojo.DefaultServiceLocator"/>
+
+    <bean id="clientService"
+          factory-bean="defaultServiceLocator"
+          factory-method="createClientServiceInstance"/>
+
+<!--    <context:annotation-config>false</context:annotation-config>-->
+
+</beans>
+
