@@ -1,6 +1,6 @@
-Resources(Version 5.2.6.RELEASE)
-
-------
+---
+[Resources](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#resources )(Version 5.2.6.RELEASE)
+---
 
 本章介绍了Spring如何处理4 ··资源以及如何在Spring中使用资源。它包括以下主题：
 
