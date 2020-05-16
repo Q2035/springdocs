@@ -367,3 +367,9 @@ ctx.getResource("file:///some/resource/path/myTemplate.txt");
 ApplicationContext ctx =
     new FileSystemXmlApplicationContext("file:///conf/context.xml");
 ```
+
+> 翻译：侧边翻译
+>
+> 校正：靓仔Q
+>
+> 时间：2020.5.16
