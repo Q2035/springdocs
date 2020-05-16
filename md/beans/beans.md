@@ -25,7 +25,7 @@
 - 活动发布
 - 应用层特定的上下文，例如Web应用程序中使用的WebApplicationContext
 
-简而言之，beanFactory提供了配置框架以及基本功能，而ApplicationContext则添加了很多企业级开发的功能。AppliationContext是beanFactory是beanFactory的完整超集。如果想了解更多关于beanFactory替代ApplicationContext信息的请移步[这里](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-beanfactory)。
+简而言之，beanFactory提供了配置框架以及基本功能，而ApplicationContext则添加了很多企业级开发的功能。AppliationContext是beanFactory是beanFactory的完整超集。如果想了解更多关于beanFactory替代ApplicationContext信息的请移步[这里](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-beanfactory )。
 
 在Spring中,构成应用程序主干并由Sprng IoC容器管理的对象称之为bean。bean是由Spring IoC容器实例化、组装以及以其他方式管理的对象，否则，bean与一般对象无异。bean及其之间的依赖关系通过配置的元数据所反映。
 
@@ -35,7 +35,7 @@
 
 Spring提供了ApplicationContext接口的几种实现。在独立应用程序中，通常会创建ClassPathXmlApplicationContext或FileSystemXmlApplicationContext的实例。尽管XML是定义配置元数据的传统格式，但是还是可以通过提供少量XML配置来声明性地启用对这些其他元数据格式的支持，从而指示容器将Java注解或代码用作元数据格式。
 
-在大多数应用场景中，不需要显式用户代码即可实例化Spring IoC容器的一个或多个实例。例如，在Web应用程序场景中，应用程序的web.xml文件中简单的8行（大约）样板通常就足够了（请参阅[Convenient ApplicationContext Instantiation for Web Applications](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#context-create)）。如果使用Spring Tools for Eclipse（Eclipse支持的开发环境），则只需单击几下鼠标或击键即可轻松创建此样板配置。
+在大多数应用场景中，不需要显式用户代码即可实例化Spring IoC容器的一个或多个实例。例如，在Web应用程序场景中，应用程序的web.xml文件中简单的8行（大约）样板通常就足够了（请参阅[Convenient ApplicationContext Instantiation for Web Applications](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#context-create )）。如果使用Spring Tools for Eclipse（Eclipse支持的开发环境），则只需单击几下鼠标或击键即可轻松创建此样板配置。
 
 下图显示了Spring的工作原理的高级视图。你的应用程序类与配置元数据结合在一起，以便在创建和初始化ApplicationContext之后，你将拥有一个完全配置且可执行的系统或应用程序。
 
