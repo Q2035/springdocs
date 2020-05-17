@@ -4,9 +4,12 @@ module spring_start {
     requires spring.test;
     requires junit;
     requires spring.core;
+    requires spring.web;
     opens com.test.chapter01;
     opens com.test.chapter02.pojo;
     opens com.test.chapter02.config;
+    opens com.test.chapter03.config;
     exports com.test.chapter02.config;
     exports com.test.chapter02.pojo;
+    exports com.test.chapter03.pojo;
 }
