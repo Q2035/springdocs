@@ -11,7 +11,7 @@ public class ValidConfig {
 
     @Bean
     public Customer customer(){
-        return new Customer("",-1);
+        return new Customer("validation",-1);
     }
 
 }

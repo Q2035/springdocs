@@ -1,23 +1,47 @@
 package com.test.chapter03.pojo;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import java.text.DateFormat;
 import java.beans.PropertyEditorSupport;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
+@Component
 public class CustomDateEditor extends PropertyEditorSupport {
 
     private DateFormat dateFormat;
-    private boolean allowEmpty;
-    private int exactDateLength;
 
-    public CustomDateEditor(DateFormat dateFormat, boolean allowEmpty) {
-        this.dateFormat = dateFormat;    //时间格式转换器
-        this.allowEmpty = allowEmpty;    //设置是否允许时间为空
-        this.exactDateLength = -1;       //设置精确对象长度，-1为不限制
+    public CustomDateEditor(@Value("2020-01-01 09:21:20") String time) {
+        this.dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     }
 
-    public CustomDateEditor(DateFormat dateFormat, boolean allowEmpty, int exactDateLength) {
-        this.dateFormat = dateFormat;
-        this.allowEmpty = allowEmpty;
-        this.exactDateLength = exactDateLength;
+    @Override
+    public void setAsText(String text) throws IllegalArgumentException {
+        try {
+            Object value = dateFormat.parse(text);
+            setValue(value);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public String getAsText() {
+        if (getValue() instanceof Date) {
+            Date d = (Date) getValue();
+            return dateFormat.format(d);
+        }
+        return super.getAsText();
+    }
+
+    @Override
+    public String toString() {
+        return "CustomDateEditor{" +
+                "dateFormat=" + dateFormat +
+                '}';
     }
 }

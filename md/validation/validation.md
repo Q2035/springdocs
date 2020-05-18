@@ -2,7 +2,7 @@
 [Validation, Data Binding, and Type Conversion](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#validation )(Version 5.2.6.RELEASE)
 ---
 
-考虑将验证作为业务逻辑有利有弊，Spring提供了一种验证（和数据绑定）设计，但并不排除其中任何一个。具体来说，验证不应与Web层绑定，应该易于本地化，并且应该可以插入任何可用的验证器。考虑到这些问题，Spring提供了一个`Validator`合同，该合同既基本又可以在应用程序的每个层中使用。
+考虑将验证作为业务逻辑有利有弊，Spring提供了一种验证（和数据绑定）设计，但并不排除其中任何一个。具体来说，验证不应与Web层绑定，应该易于本地化，并且应该可以插入任何可用的验证器。考虑到这些问题，Spring提供了一个`Validator`，并使之可以在应用程序的每个层中使用。
 
 数据绑定对于使用户输入动态绑定到应用程序的域模型（或用于处理用户输入的任何对象）非常有用。 Spring提供了恰当地命名为DataBinder的功能。 Validator和DataBinder组成了`validation` 包，该`validation` 包主要用于但不限于Web层。
 
@@ -10,7 +10,7 @@ BeanWrapper是Spring框架中的基本概念，并在很多地方使用。你可
 
 Spring的DataBinder和较低级别的BeanWrapper都使用PropertyEditorSupport实现来解析和格式化属性值。 PropertyEditor和PropertyEditorSupport类型是JavaBeans规范的一部分，本章还将对此进行说明。 Spring 3引入了*core.convert*包，该包提供了常规的类型转换工具，以及用于格式化UI字段值的高级"format"包。你可以将这些包用作PropertyEditorSupport实现的更简单替代方案。本章还将对它们进行讨论。
 
-Spring通过设置基础结构和Spring自己的Validator合同的适配器来支持[Java Bean Validation](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#validation-beanvalidation)。应用程序可以全局启用一次Bean验证，如Java Bean验证中所述，并将其专用于所有验证需求。在Web层中，应用程序可以每个DataBinder进一步注册控制器本地的Spring Validator实例，如[Configuring a `DataBinder`](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#validation-binder),中所述，这对于插入自定义验证逻辑很有用。
+Spring通过设置基础结构和Spring自己的Validator合同的适配器来支持[Java Bean Validation](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#validation-beanvalidation)。应用程序可以全局启用一次Bean验证，如Java Bean验证中所述，并将其专用于所有验证需求。在Web层中，应用程序可以将DataBinder进一步注册控制器本地的Spring Validator实例，如[Configuring a `DataBinder`](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#validation-binder)中所述，这对于插入自定义验证逻辑很有用。
 
 ## 使用Spring的Validator接口进行验证
 
@@ -205,7 +205,7 @@ Float salary = (Float) company.getPropertyValue("managingDirector.salary");
 
 ### 内置的PropertyEditor实现
 
-Spring使用PropertyEditor的概念来实现对象和字符串之间的转换。以不同于对象本身的方式表示属性可能很方便。例如，日期可以用人类可读的方式表示（如字符串：'2007-14-09'），而我们仍然可以将人类可读的形式转换回原始日期（或者更好的是，转换任何日期以人类可读的形式输入到Date对象）。通过注册类型为*java.beans.PropertyEditor*的自定义编辑器，可以实现此行为。在BeanWrapper上或在特定的IoC容器中注册自定义编辑器（如前所述），使它具有如何将属性转换为所需类型的能力。有关PropertyEditor的更多信息，请参见[the javadoc of the `java.beans` package from Oracle](https://docs.oracle.com/javase/8/docs/api/java/beans/package-summary.html).
+Spring使用PropertyEditor的概念来**实现对象和字符串之间的转换**。以不同于对象本身的方式表示属性可能很方便。例如，日期可以用人类可读的方式表示（如字符串：'2007-14-09'），而我们仍然可以将人类可读的形式转换回原始日期（或者更好的是，转换任何日期以人类可读的形式输入到Date对象）。通过注册类型为*java.beans.PropertyEditor*的自定义编辑器，可以实现此行为。在BeanWrapper上或在特定的IoC容器中注册自定义编辑器（如前所述），使它具有如何将属性转换为所需类型的能力。有关PropertyEditor的更多信息，请参见[the javadoc of the `java.beans` package from Oracle](https://docs.oracle.com/javase/8/docs/api/java/beans/package-summary.html).
 
 在Spring中使用属性编辑的两个示例：
 
@@ -240,7 +240,7 @@ com
       SomethingEditor // the PropertyEditor for the Something class
 ```
 
-注意，你也可以在此处使用标准的BeanInfo JavaBeans机制（在[ here](https://docs.oracle.com/javase/tutorial/javabeans/advanced/customization.html)上进行了某种程度的描述）。以下示例使用BeanInfo机制使用关联类的属性显式注册一个或多个PropertyEditor实例：
+注意，你也可以在此处使用标准的BeanInfo JavaBeans机制（在[这里](https://docs.oracle.com/javase/tutorial/javabeans/advanced/customization.html)进行了某种程度的描述）。以下示例使用BeanInfo机制使用关联类的属性显式注册一个或多个PropertyEditor实例：
 
 ```
 com
@@ -342,8 +342,7 @@ public class ExoticTypeEditor extends PropertyEditorSupport {
 
 **使用PropertyEditorRegistrar**
 
-使用Spring容器注册属性编辑器的另一种机制是创建和使用PropertyEditorRegistrar。当需要在几种不同情况下使用同一组属性编辑器时，此接口特别有用。你可以编写相应的注册器，并在每种情况下重复使用它。PropertyEditorRegistrar实例与一个名为PropertyEditorRegistry的接口一起工作，该接口由Spring 
-BeanWrapper（和DataBinder）实现。当与CustomEditorConfigurer（在[here](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-beans-conversion-customeditor-registration)描述）结合使用时，PropertyEditorRegistrar实例特别方便，后者公开了一个名为setPropertyEditorRegistrars（..）的属性。以这种方式添加到CustomEditorConfigurer的PropertyEditorRegistrar实例可以轻松地与DataBinder和Spring MVC控制器共享。此外，它避免了在自定义编辑器上进行同步的需求：希望PropertyEditorRegistrar为每次创建bean的尝试创建新的PropertyEditor实例。
+使用Spring容器注册属性编辑器的另一种机制是创建和使用PropertyEditorRegistrar。当需要在几种不同情况下使用同一组属性编辑器时，此接口特别有用。你可以编写相应的注册器，并在每种情况下重复使用它。PropertyEditorRegistrar实例与一个名为PropertyEditorRegistry的接口一起工作，该接口由Spring BeanWrapper（和DataBinder）实现。当与CustomEditorConfigurer（在[这里](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-beans-conversion-customeditor-registration)描述）结合使用时，PropertyEditorRegistrar实例特别方便，后者公开了一个名为setPropertyEditorRegistrars（..）的属性。以这种方式添加到CustomEditorConfigurer的PropertyEditorRegistrar实例可以轻松地与DataBinder和Spring MVC控制器共享。此外，它避免了在自定义编辑器上进行同步的需求：希望PropertyEditorRegistrar为每次创建bean的尝试创建新的PropertyEditor实例。
 
 以下示例说明如何创建自己的PropertyEditorRegistrar实现：
 
@@ -638,7 +637,7 @@ public interface Parser<T> {
 }
 ```
 
-要创建自己的Formatter，请实现前面显示的Formatter接口。将T参数化为你希望格式化的对象的类型（例如java.util.Date）。实现print()操作以打印T的实例以在客户端语言环境中显示。实现parse()操作，以从客户端语言环境返回的格式化表示形式解析T的实例。如果解析尝试失败，则Formatter应该抛出ParseException或IllegalArgumentException。注意确保你的Formatter实现是线程安全的。
+要创建自己的Formatter，请实现前面显示的Formatter接口。将T参数化为你希望格式化的对象的类型（例如*java.util.Date*）。实现print()操作以打印T的实例以在客户端语言环境中显示。实现parse()操作，以从客户端语言环境返回的格式化表示形式解析T的实例。如果解析尝试失败，则Formatter应该抛出ParseException或IllegalArgumentException。注意确保你的Formatter实现是线程安全的。
 
 format子包为方便起见提供了几种Formatter实现。number包提供NumberStyleFormatter，CurrencyStyleFormatter和PercentStyleFormatter来格式化使用*java.text.NumberFormat*的Number对象。datetime包提供了一个DateFormatter，用于使用*java.text.DateFormat*格式化java.util.Date对象。*datetime.joda*包基于 [Joda-Time library](https://www.joda.org/joda-time/)提供了全面的日期时间格式支持。
 
@@ -920,3 +919,131 @@ public class AppConfig {
     }
 }
 ```
+
+前面示例中的基本配置触发Bean验证以使用其默认引导机制进行初始化。 Bean验证提供程序，例如Hibernate Validator，应该存在于类路径中并被自动检测到。
+
+#### 注入验证器
+
+LocalValidatorFactoryBean同时实现*javax.validation.ValidatorFactory*和*javax.validation.Validator*以及Spring的*org.springframework.validation.Validator*。你可以将对这些接口之一的引用注入需要调用验证逻辑的bean中。
+
+如果你希望直接使用Bean Validation API，则可以注入对*javax.validation.Validator*的引用，如以下示例所示：
+
+```java
+import javax.validation.Validator;
+
+@Service
+public class MyService {
+
+    @Autowired
+    private Validator validator;
+}
+```
+
+如果你的bean需要使用Spring Validation API，则可以注入对*org.springframework.validation.Validator*的引用，如以下示例所示：
+
+```java
+import org.springframework.validation.Validator;
+
+@Service
+public class MyService {
+
+    @Autowired
+    private Validator validator;
+}
+```
+
+#### 配置自定义约束
+
+每个bean验证约束都包括两个部分：
+
+- @Constraint注解，用于声明约束及其可配置属性。
+- *javax.validation.ConstraintValidator*接口的实现，用于实现约束的行为。
+
+要将声明与实现相关联，每个@Constraint注解都引用一个对应的ConstraintValidator实现类。在运行时，当在域模型中遇到约束注解时，ConstraintValidatorFactory实例化引用的实现。
+
+默认情况下，LocalValidatorFactoryBean配置一个SpringConstraintValidatorFactory，该工厂使用Spring创建ConstraintValidator实例。这使你的自定义ConstraintValidators像其他任何Spring bean一样受益于依赖项注入。
+
+以下示例显示了一个自定义@Constraint声明，后跟一个关联的ConstraintValidator实现，该实现使用Spring进行依赖项注入：
+
+```java
+@Target({ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy=MyConstraintValidator.class)
+public @interface MyConstraint {
+}
+```
+
+```java
+import javax.validation.ConstraintValidator;
+
+public class MyConstraintValidator implements ConstraintValidator {
+
+    @Autowired;
+    private Foo aDependency;
+
+    // ...
+}
+```
+
+如前面的示例所示，ConstraintValidator实现可以像其他任何Spring bean一样具有其@Autowired依赖项。
+
+#### Spring驱动方法验证
+
+你可以通过MethodValidationPostProcessor bean定义将Bean Validation 1.1（以及作为自定义扩展，还包括Hibernate Validator 4.3）支持的方法验证功能集成到Spring上下文中：
+
+```java
+import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
+
+@Configuration
+
+public class AppConfig {
+
+    @Bean
+    public MethodValidationPostProcessor validationPostProcessor() {
+        return new MethodValidationPostProcessor;
+    }
+}
+```
+
+为了有资格进行Spring驱动的方法验证，所有目标类都必须使用Spring的@Validated注解进行注解，该注解也可以选择声明要使用的验证组。有关使用Hibernate
+Validator和Bean Validation 1.1提供程序的设置详细信息，请参见[`MethodValidationPostProcessor`](https://docs.spring.io/spring-framework/docs/5.2.6.RELEASE/javadoc-api/org/springframework/validation/beanvalidation/MethodValidationPostProcessor.html)。
+
+> 方法验证依赖于目标类周围的AOP代理，即接口上方法的JDK动态代理或CGLIB代理。代理的使用存在某些限制，[Understanding AOP Proxies](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-understanding-aop-proxies)中介绍了其中的一些限制。另外，请记住在代理类上始终使用方法和访问器；直接访问将不起作用。
+
+#### 其他配置选项
+
+在大多数情况下，默认LocalValidatorFactoryBean配置就足够了。从消息插值到遍历解析，有许多用于各种Bean验证构造的配置选项。有关这些选项的更多信息，请参见[`LocalValidatorFactoryBean`](https://docs.spring.io/spring-framework/docs/5.2.6.RELEASE/javadoc-api/org/springframework/validation/beanvalidation/LocalValidatorFactoryBean.html)Javadoc。
+
+### 配置一个DataBinder
+
+从Spring 3开始，你可以使用Validator配置DataBinder实例。配置完成后，你可以通过调用binder.validate()来调用Validator。任何验证`Errors` 都会自动添加到binder的BindingResult中。
+
+下面的示例演示如何在绑定到目标对象后，以编程方式使用DataBinder来调用验证逻辑：
+
+```java
+Foo target = new Foo();
+DataBinder binder = new DataBinder(target);
+binder.setValidator(new FooValidator());
+
+// bind to the target object
+binder.bind(propertyValues);
+
+// validate the target object
+binder.validate();
+
+// get BindingResult that includes any validation errors
+BindingResult results = binder.getBindingResult();
+```
+
+你还可以通过*dataBinder.addValidators*和*dataBinder.replaceValidators*配置具有多个Validator实例的DataBinder。当将全局配置的bean验证与在DataBinder实例上本地配置的Spring Validator结合使用时，这很有用。请参阅[Spring MVC Validation Configuration](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/web.html#mvc-config-validation).
+
+#### Spring MVC 3验证
+
+参见Spring MVC一章中的 [Validation](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/web.html#mvc-config-validation).
+
+> 翻译：侧边翻译
+>
+> 校正：靓仔Q
+>
+> 时间：2020.5.16~2020.5.18
+

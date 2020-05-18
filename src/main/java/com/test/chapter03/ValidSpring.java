@@ -1,10 +1,7 @@
 package com.test.chapter03;
 
 import com.test.chapter03.config.ValidConfig;
-import com.test.chapter03.pojo.Company;
-import com.test.chapter03.pojo.Customer;
-import com.test.chapter03.pojo.CustomerValidator;
-import com.test.chapter03.pojo.Employee;
+import com.test.chapter03.pojo.*;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.PropertyValue;
@@ -16,12 +13,10 @@ import java.util.Arrays;
 public class ValidSpring {
     public static void main(String[] args) {
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(ValidConfig.class);
-        CustomerValidator customerValidator = applicationContext.getBean(CustomerValidator.class);
-        Customer bean = applicationContext.getBean(Customer.class);
-        customerValidator.supports(Integer.class);
-        System.out.println(bean);
 
-        testBeanWrapper();
+        System.out.println(applicationContext.getBean(CustomDateEditor.class));
+
+//        testBeanWrapper();
 
         Arrays.stream(applicationContext.getBeanDefinitionNames()).forEach(System.out::println);
     }
