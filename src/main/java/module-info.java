@@ -1,10 +1,14 @@
 module spring_start {
+
     requires spring.beans;
     requires spring.context;
     requires spring.test;
     requires junit;
     requires spring.core;
     requires spring.web;
+//    。。。
+//    java.beans居然在这个模块
+    requires java.desktop;
     opens com.test.chapter01;
     opens com.test.chapter02.pojo;
     opens com.test.chapter02.config;

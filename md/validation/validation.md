@@ -6,9 +6,9 @@
 
 数据绑定对于使用户输入动态绑定到应用程序的域模型（或用于处理用户输入的任何对象）非常有用。 Spring提供了恰当地命名为DataBinder的功能。 Validator和DataBinder组成了`validation` 包，该`validation` 包主要用于但不限于Web层。
 
-BeanWrapper是Spring框架中的基本概念，并在很多地方使用。但是，你可能不需要直接使用BeanWrapper。但是，因为这是参考文档，所以我们认为可能需要进行一些解释。我们将在本章中解释BeanWrapper，因为如果你要使用它，那么在尝试将数据绑定到对象时最有可能使用它。
+BeanWrapper是Spring框架中的基本概念，并在很多地方使用。你可能不需要直接使用BeanWrapper。但是，因为这是参考文档，所以我们认为可能需要进行一些解释。我们将在本章中解释BeanWrapper，因为如果你要使用它，那么在尝试将数据绑定到对象时最有可能使用它。
 
-Spring的DataBinder和较低级别的BeanWrapper都使用PropertyEditorSupport实现来解析和格式化属性值。 PropertyEditor和PropertyEditorSupport类型是JavaBeans规范的一部分，本章还将对此进行说明。 Spring 3引入了core.convert包，该包提供了常规的类型转换工具，以及用于格式化UI字段值的高级"format"包。你可以将这些包用作PropertyEditorSupport实现的更简单替代方案。本章还将对它们进行讨论。
+Spring的DataBinder和较低级别的BeanWrapper都使用PropertyEditorSupport实现来解析和格式化属性值。 PropertyEditor和PropertyEditorSupport类型是JavaBeans规范的一部分，本章还将对此进行说明。 Spring 3引入了*core.convert*包，该包提供了常规的类型转换工具，以及用于格式化UI字段值的高级"format"包。你可以将这些包用作PropertyEditorSupport实现的更简单替代方案。本章还将对它们进行讨论。
 
 Spring通过设置基础结构和Spring自己的Validator合同的适配器来支持[Java Bean Validation](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#validation-beanvalidation)。应用程序可以全局启用一次Bean验证，如Java Bean验证中所述，并将其专用于所有验证需求。在Web层中，应用程序可以每个DataBinder进一步注册控制器本地的Spring Validator实例，如[Configuring a `DataBinder`](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#validation-binder),中所述，这对于插入自定义验证逻辑很有用。
 
@@ -400,3 +400,211 @@ public final class RegisterUserController extends SimpleFormController {
 ```
 
 这种PropertyEditor注册样式可以使代码简洁（initBinder（..）的实现只有一行长），并且可以将通用的PropertyEditor注册代码封装在一个类中，然后根据需要在许多Controller之间共享。
+
+## Spring类型转换
+
+Spring 3引入了*core.convert*包，该包提供了通用的类型转换系统。系统定义了一个用于实现类型转换逻辑的SPI和一个用于在运行时执行类型转换的API。在Spring容器中，可以使用此系统作为PropertyEditor实现的替代方法，以将外部化的bean属性值字符串转换为所需的属性类型。你还可以在应用程序中需要类型转换的任何地方使用公共API。
+
+### SPI转换器
+
+如以下接口定义所示，用于实现类型转换逻辑的SPI非常简单且具有强类型。
+
+```java
+package org.springframework.core.convert.converter;
+
+public interface Converter<S, T> {
+
+    T convert(S source);
+}
+```
+
+要创建自己的转换器，请实现Converter接口并将S设置为要转换的类型，并将T设置为要转换成的类型。如果还需要注册一个委托数组或集合转换器（默认情况下DefaultConversionService会这样做），则也可以透明地应用此类转换器，如果需要将S的集合或数组转换为T的数组或集合。
+
+对于每次对convert（S）的调用，保证源参数不为null。如果转换失败，你的转换器可能会引发任何未经检查的异常。具体来说，它应该抛出IllegalArgumentException以报告无效的源值。注意确保你的Converter实现是线程安全的。
+
+为了方便起见，在*core.convert.support*软件包中提供了几种转换器实现。这些包括从字符串到数字和其他常见类型的转换器。下面的清单显示了StringToInteger类，它是一个典型的Converter实现：
+
+```java
+package org.springframework.core.convert.support;
+
+final class StringToInteger implements Converter<String, Integer> {
+
+    public Integer convert(String source) {
+        return Integer.valueOf(source);
+    }
+}
+```
+
+### 使用ConverterFactory
+
+当需要集中整个类层次结构的转换逻辑时（例如，从String转换为Enum对象时），可以实现ConverterFactory，如以下示例所示：
+
+```java
+package org.springframework.core.convert.converter;
+
+public interface ConverterFactory<S, R> {
+
+    <T extends R> Converter<S, T> getConverter(Class<T> targetType);
+}
+```
+
+参数化S为你要转换的类型，参数R为基础类型，定义可以转换为的类的范围。然后实现getConverter（Class \<T>），其中T是R的子类。
+
+以StringToEnumConverterFactory为例：
+
+```java
+package org.springframework.core.convert.support;
+
+final class StringToEnumConverterFactory implements ConverterFactory<String, Enum> {
+
+    public <T extends Enum> Converter<String, T> getConverter(Class<T> targetType) {
+        return new StringToEnumConverter(targetType);
+    }
+
+    private final class StringToEnumConverter<T extends Enum> implements Converter<String, T> {
+
+        private Class<T> enumType;
+
+        public StringToEnumConverter(Class<T> enumType) {
+            this.enumType = enumType;
+        }
+
+        public T convert(String source) {
+            return (T) Enum.valueOf(this.enumType, source.trim());
+        }
+    }
+}
+```
+
+### 使用GenericConverter
+
+当需要复杂的Converter实现时，请考虑使用GenericConverter接口。与Converter相比，GenericConverter具有比Converter更灵活但类型强度不高的签名，支持在多种源类型和目标类型之间进行转换。此外，GenericConverter使你可以在实现转换逻辑时使用可用的源字段和目标字段上下文。这种上下文允许类型转换由字段注释或在字段签名上声明的通用信息驱动。以下清单显示了GenericConverter的接口定义：
+
+```java
+package org.springframework.core.convert.converter;
+
+public interface GenericConverter {
+
+    public Set<ConvertiblePair> getConvertibleTypes();
+
+    Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType);
+}
+```
+
+要实现GenericConverter，请让getConvertibleTypes（）返回支持的源→目标类型对。然后实现convert（Object，TypeDescriptor，TypeDescriptor）包含你的转换逻辑。源TypeDescriptor提供对包含正在转换的值的源字段的访问。使用目标TypeDescriptor，可以访问要设置转换值的目标字段。
+
+GenericConverter的一个很好的例子是在Java数组和集合之间进行转换的转换器。这样的ArrayToCollectionConverter会对声明目标集合类型的字段进行内省，以解析集合的元素类型。这样就可以在将集合设置到目标字段上之前，将源数组中的每个元素转换为集合元素类型。
+
+> 由于GenericConverter是一个更复杂的SPI接口，因此仅应在需要时使用它。支持Converter或ConverterFactory以满足基本的类型转换需求。
+
+#### 使用ConditionalGenericConverter
+
+有时，你希望Converter仅在满足特定条件时才运行。例如，你可能只想在目标字段上存在特定注解时才运行Converter，或者可能仅在目标类上定义了特定方法（例如静态valueOf方法）时才运行Converter。ConditionalGenericConverter是GenericConverter和ConditionalConverter接口的联合，可让你定义以下自定义匹配条件：
+
+```java
+public interface ConditionalConverter {
+
+    boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType);
+}
+
+public interface ConditionalGenericConverter extends GenericConverter, ConditionalConverter {
+}
+```
+
+ConditionalGenericConverter的一个很好的例子是EntityConverter，它在持久实体标识符和实体引用之间进行转换。仅当目标实体类型声明静态查找器方法（例如findAccount（Long））时，此类EntityConverter才可能匹配。你可以在matchs（TypeDescriptor，TypeDescriptor）的实现中执行这种查找方法检查。
+
+### The ConversionService API
+
+ConversionService定义了一个统一的API，用于在运行时执行类型转换逻辑。转换器通常在以下外观接口后面执行：
+
+```java
+package org.springframework.core.convert;
+
+public interface ConversionService {
+
+    boolean canConvert(Class<?> sourceType, Class<?> targetType);
+
+    <T> T convert(Object source, Class<T> targetType);
+
+    boolean canConvert(TypeDescriptor sourceType, TypeDescriptor targetType);
+
+    Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType);
+
+}
+```
+
+大多数ConversionService实现也都实现ConverterRegistry，该转换器提供用于注册转换器的SPI。在内部，ConversionService实现委派其注册的转换器执行类型转换逻辑。
+
+*core.convert.support*软件包中提供了一个强大的ConversionService实现。 
+GenericConversionService是适用于大多数环境的通用实现。 ConversionServiceFactory提供了一个方便的工厂来创建通用的ConversionService配置。
+
+### 配置ConversionService
+
+ConversionService是无状态对象，旨在在应用程序启动时实例化，然后在多个线程之间共享。在Spring应用程序中，通常为每个Spring容器（或ApplicationContext）配置一个ConversionService实例。当框架需要执行类型转换时，Spring会使用该ConversionService并使用它。你还可以将此ConversionService注入到任何bean中，然后直接调用它。
+
+> 如果未向Spring注册任何ConversionService，则使用原始的基于PropertyEditor的系统。
+
+要向Spring注册默认的ConversionService，请添加以下bean定义，其id为conversionService：
+
+```xml
+<bean id="conversionService"
+    class="org.springframework.context.support.ConversionServiceFactoryBean"/>
+```
+
+默认的ConversionService可以在字符串，数字，枚举，集合，映射和其他常见类型之间进行转换。要用你自己的自定义转换器补充或覆盖默认转换器，请设置converters属性。属性值可以实现Converter，ConverterFactory或GenericConverter接口中的任何一个。
+
+```xml
+<bean id="conversionService"
+        class="org.springframework.context.support.ConversionServiceFactoryBean">
+    <property name="converters">
+        <set>
+            <bean class="example.MyCustomConverter"/>
+        </set>
+    </property>
+</bean>
+```
+
+在Spring MVC应用程序中使用ConversionService也很常见。参见Spring MVC一章中的[Conversion and Formatting](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/web.html#mvc-config-conversion)。
+
+在某些情况下，你可能希望在转换过程中应用格式设置。有关使用FormattingConversionServiceFactoryBean的详细信息，请参见[The `FormatterRegistry` SPI](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#format-FormatterRegistry-SPI)。
+
+### 以编程方式使用ConversionService
+
+要以编程方式使用ConversionService实例，可以像对其他任何bean一样注入对该实例的引用。以下示例显示了如何执行此操作：
+
+```java
+@Service
+public class MyService {
+
+    public MyService(ConversionService conversionService) {
+        this.conversionService = conversionService;
+    }
+
+    public void doIt() {
+        this.conversionService.convert(...)
+    }
+}
+```
+
+对于大多数用例，可以使用指定targetType的convert方法，但不适用于更复杂的类型，例如参数化元素的集合。例如，如果要以编程方式将整数列表转换为字符串列表，则需要提供源类型和目标类型的正式定义。
+
+幸运的是，如下面的示例所示，TypeDescriptor提供了各种选项来使操作变得简单明了：
+
+```java
+DefaultConversionService cs = new DefaultConversionService();
+
+List<Integer> input = ...
+cs.convert(input,
+    TypeDescriptor.forObject(input), // List<Integer> type descriptor
+    TypeDescriptor.collection(List.class, TypeDescriptor.valueOf(String.class)));
+```
+
+请注意，DefaultConversionService自动注册适用于大多数环境的转换器。这包括集合转换器，标量转换器和基本的对象到字符串转换器。你可以使用DefaultConversionService类上的静态addDefaultConverters方法向任何ConverterRegistry注册相同的转换器。
+
+值类型的转换器可重用于数组和集合，因此，假设标准集合处理适当，则无需创建特定的转换器即可将S的集合转换为T的集合。
+
+## Spring字段格式
+
+如上一节所述，[`core.convert`](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#core-convert)是一种通用类型转换系统。它提供了统一的ConversionService API和强类型的Converter SPI，用于实现从一种类型到另一种类型的转换逻辑。 Spring容器使用此系统绑定bean属性值。此外，Spring Expression Language（SpEL）和DataBinder都使用此系统绑定字段值。例如，当SpEL需要强制将Short转换为Long来完成expression.setValue（Object bean，Object value）尝试时，*core.convert*系统将执行强制转换。
+
+现在考虑典型客户端环境（例如Web或桌面应用程序）的类型转换要求。在这样的环境中，你通常会从String转换为支持客户端回发过程，然后又转换为String以支持视图渲染过程。另外，你通常需要本地化String值。更通用的core.convert Converter SPI不能直接满足此类格式化要求。为了直接解决这些问题，Spring 3引入了方便的Formatter SPI，它为客户端环境提供了PropertyEditor实现的简单而强大的替代方案。
