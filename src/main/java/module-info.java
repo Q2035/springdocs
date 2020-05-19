@@ -3,6 +3,7 @@ module spring_start {
     requires spring.beans;
     requires spring.context;
     requires spring.test;
+    requires spring.expression;
     requires junit;
     requires spring.core;
     requires spring.web;
@@ -16,4 +17,5 @@ module spring_start {
     exports com.test.chapter02.config;
     exports com.test.chapter02.pojo;
     exports com.test.chapter03.pojo;
+    exports com.test.chapter04.spel;
 }
