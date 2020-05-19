@@ -116,3 +116,19 @@ boolean result = exp.getValue(tesla, Boolean.class);
 // result == true
 ```
 
+### 理解`EvaluationContext`
+
+在评估表达式以解析属性、方法或字段并帮助执行类型转换时，使用EvaluationContext接口。 Spring提供了两种实现。
+
+- `SimpleEvaluationContext`：针对不需要完整SpEL语言语法范围且应受到有意义限制的表达式类别，公开了SpEL基本语言功能和配置选项的子集。示例包括但不限于数据绑定表达式和基于属性的过滤器。
+- `StandardEvaluationContext`：公开SpEL语言功能和配置选项的全部集合。你可以使用它来指定默认的根对象并配置每个可用的评估相关策略。
+
+`SimpleEvaluationContext` 设计为仅支持SpEL语言语法的子集。它不包括Java类型引用，构造函数和Bean引用。它还要求你明确选择对表达式中的属性和方法的支持级别。默认情况下，create（）静态工厂方法仅启用对属性的读取访问。你还可以获取构建器来配置所需的确切支持级别，并针对以下一种或某种组合：
+
+- 仅自定义PropertyAccessor（无反射）
+- 只读访问的数据绑定属性
+- 读写的数据绑定属性
+
+#### 类型转换
+
+默认情况下，SpEL使用Spring核心中可用的转换服务（*org.springframework.core.convert.ConversionService*）。此转换服务附带许多内置转换器，用于常见转换，但也可以完全扩展，以便你可以在类型之间添加自定义转换。此外，它是泛型感知的。这意味着，当你在表达式中使用泛型类型时，SpEL会尝试进行转换以维护遇到的任何对象的类型正确性。
