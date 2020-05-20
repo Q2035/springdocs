@@ -393,12 +393,161 @@ int maxValue = (Integer) parser.parseExpression("0x7FFFFFFF").getValue();
 boolean trueValue = (Boolean) parser.parseExpression("true").getValue();
 
 Object nullValue = parser.parseExpression("null").getValue();
-
 ```
 
 数字支持使用负号，指数符号和小数点。默认情况下，使用Double.parseDouble()解析实数。
 
 #### Properties, Arrays, Lists, Maps, 和Indexers
 
-使用属性引用进行导航很容易。为此，请使用句点来指示嵌套的属性值。 Inventor类的实例pupin和tesla填充类中列出的数据( [Classes used in the examples](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#expressions-example-classes) )。要向下导航并获取特斯拉的出生年份和普平的出生城市，我们使用以下表达式：
+使用属性引用进行导航很容易。为此，请使用句点来指示嵌套的属性值。 Inventor类的实例pupin和tesla填充类中列出的数据( [Classes used in the examples](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#expressions-example-classes) )。要向下导航并获取Tesla的出生年份和Pupin的出生城市，我们使用以下表达式：
 
+```java
+// evals to 1856
+int year = (Integer) parser.parseExpression("Birthdate.Year + 1900").getValue(context);
+
+String city = (String) parser.parseExpression("placeOfBirth.City").getValue(context);
+```
+
+属性名称的首字母允许不区分大小写。数组和列表的内容通过使用方括号表示法获得，如以下示例所示：
+
+```java
+ExpressionParser parser = new SpelExpressionParser();
+EvaluationContext context = SimpleEvaluationContext.forReadOnlyDataBinding().build();
+
+// Inventions Array
+
+// evaluates to "Induction motor"
+String invention = parser.parseExpression("inventions[3]").getValue(
+        context, tesla, String.class);
+
+// Members List
+
+// evaluates to "Nikola Tesla"
+String name = parser.parseExpression("Members[0].Name").getValue(
+        context, ieee, String.class);
+
+// List and Array navigation
+// evaluates to "Wireless communication"
+String invention = parser.parseExpression("Members[0].Inventions[6]").getValue(
+        context, ieee, String.class);
+```
+
+通过在方括号内指定文字键值可以获取映射的内容。在下面的示例中，由于Officer映射的键是字符串，因此我们可以指定字符串文字：
+
+```java
+// Officer's Dictionary
+
+Inventor pupin = parser.parseExpression("Officers['president']").getValue(
+        societyContext, Inventor.class);
+
+// evaluates to "Idvor"
+String city = parser.parseExpression("Officers['president'].PlaceOfBirth.City").getValue(
+        societyContext, String.class);
+
+// setting values
+parser.parseExpression("Officers['advisors'][0].PlaceOfBirth.Country").setValue(
+        societyContext, "Croatia");
+```
+
+### 内联Lists
+
+你可以使用{}表示法在表达式中直接表达列表。
+
+```java
+// evaluates to a Java list containing the four numbers
+List numbers = (List) parser.parseExpression("{1,2,3,4}").getValue(context);
+
+List listOfLists = (List) parser.parseExpression("{{'a','b'},{'x','y'}}").getValue(context);
+```
+
+{}本身表示一个空列表。出于性能原因，如果列表本身完全由固定文字组成，则会创建一个常量列表来表示该表达式（而不是在每次求值时都建立一个新列表）。
+
+### 内联Maps
+
+你也可以使用{key：value}表示法在表达式中直接表达地图。以下示例显示了如何执行此操作：
+
+```java
+// evaluates to a Java map containing the two entries
+Map inventorInfo = (Map) parser.parseExpression("{name:'Nikola',dob:'10-July-1856'}").getValue(context);
+
+Map mapOfMaps = (Map) parser.parseExpression("{name:{first:'Nikola',last:'Tesla'},dob:{day:10,month:'July',year:1856}}").getValue(context);
+```
+
+{：}本身意味着一个空的map。出于性能原因，如果映射图本身由固定的文字或其他嵌套的常量结构（列表或映射图）组成，则会创建一个常量映射图来表示该表达式（而不是在每次求值时都构建一个新的映射图）。映射键的引用是可选的。上面的示例不使用带引号的键。
+
+### 数组构造
+
+你可以使用熟悉的Java语法来构建数组，可以选择提供一个初始化程序，以在构造时填充该数组。以下示例显示了如何执行此操作：
+
+```java
+int[] numbers1 = (int[]) parser.parseExpression("new int[4]").getValue(context);
+
+// Array with initializer
+int[] numbers2 = (int[]) parser.parseExpression("new int[]{1,2,3}").getValue(context);
+
+// Multi dimensional array
+int[][] numbers3 = (int[][]) parser.parseExpression("new int[4][5]").getValue(context);
+```
+
+构造多维数组时，当前无法提供初始化程序。
+
+### 方法
+
+你可以使用典型的Java编程语法来调用方法。你还可以在文字上调用方法。还支持变量参数。下面的示例演示如何调用方法：
+
+```java
+// string literal, evaluates to "bc"
+String bc = parser.parseExpression("'abc'.substring(1, 3)").getValue(String.class);
+
+// evaluates to true
+boolean isMember = parser.parseExpression("isMember('Mihajlo Pupin')").getValue(
+        societyContext, Boolean.class);
+```
+
+### 运算符
+
+Spring表达式语言支持以下几种运算符：
+
+- [Relational Operators](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#expressions-operators-relational)
+- [Logical Operators](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#expressions-operators-logical)
+- [Mathematical Operators](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#expressions-operators-mathematical)
+- [The Assignment Operator](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#expressions-assignment)
+
+#### 关系运算符
+
+使用标准运算符表示法支持关系运算符（等于，不等于，小于，小于或等于，大于和大于或等于）。以下清单显示了一些运算符示例：
+
+```java
+// evaluates to true
+boolean trueValue = parser.parseExpression("2 == 2").getValue(Boolean.class);
+
+// evaluates to false
+boolean falseValue = parser.parseExpression("2 < -5.0").getValue(Boolean.class);
+
+// evaluates to true
+boolean trueValue = parser.parseExpression("'black' < 'block'").getValue(Boolean.class);
+```
+
+> 对null的大于和小于比较遵循一个简单的规则：null被视为无（不是零）。结果，任何其他值始终大于null（X> null始终为true），并且其他任何值都不小于零（X <null始终为false）。
+>
+> 如果你更喜欢数字比较，请避免使用基于数字的空比较，而建议使用零进行比较（例如，X> 0或X <0）。
+
+除了标准的关系运算符外，SpEL还支持instanceof和基于正则表达式的匹配运算符。以下清单显示了两个示例：
+
+```java
+// evaluates to false
+boolean falseValue = parser.parseExpression(
+        "'xyz' instanceof T(Integer)").getValue(Boolean.class);
+
+// evaluates to true
+boolean trueValue = parser.parseExpression(
+        "'5.00' matches '^-?\\d+(\\.\\d{2})?$'").getValue(Boolean.class);
+
+//evaluates to false
+boolean falseValue = parser.parseExpression(
+        "'5.0067' matches '^-?\\d+(\\.\\d{2})?$'").getValue(Boolean.class);
+```
+
+> 请注意原始类型，因为它们会立即被包装为包装器类型，因此，按预期方式，1个instanceof T（int）的计算结果为false，而1个instanceof T（Integer）的计算结果为true。
+
+每个符号运算符也可以指定为纯字母等效项。这样可以避免使用的符号对于嵌入表达式的文档类型具有特殊含义的问题（例如在XML文档中）。等效的文字是：
