@@ -10,6 +10,9 @@ module spring_start {
 //    。。。
 //    java.beans居然在这个模块
     requires java.desktop;
+
+    exports com.test.chapter04;
+
     opens com.test.chapter01;
     opens com.test.chapter02.pojo;
     opens com.test.chapter02.config;

@@ -1,5 +1,6 @@
 package com.test.chapter04;
 
+import org.junit.Test;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -19,6 +20,10 @@ public class EvalutationContextTest {
         ExpressionParser parser = new SpelExpressionParser();
         parser.parseExpression("booleanList[0]").setValue(context,simple,"false");
         System.out.println(simple.booleanList.get(0));
+    }
+
+    @Test
+    public void t1(){
     }
 
 }
