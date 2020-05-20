@@ -5,7 +5,6 @@
 
 第一部分已经完成，当前,可以在我[博客](https://www.hellooooo.top/blog/43 )查看，也可以在md目录下查看
 
-
 ## [Resources](https://www.hellooooo.top/blog/44)
 
 第二部分已经完成，当前,可以在我[博客](https://www.hellooooo.top/blog/44 )查看，也可以在md目录下查看
@@ -18,6 +17,8 @@
 ## [Spring Expression Language (SpEL)](https://www.hellooooo.top/blog/46 )
 
 第四部分已经完成，当前,可以在我[博客](https://www.hellooooo.top/blog/46 )查看，也可以在md目录下查看
+
+唉，要考试了，翻译进度慢一点吧
 
 ## Aspect Oriented Programming with Spring
 **翻译中**
