@@ -551,3 +551,239 @@ boolean falseValue = parser.parseExpression(
 > 请注意原始类型，因为它们会立即被包装为包装器类型，因此，按预期方式，1个instanceof T（int）的计算结果为false，而1个instanceof T（Integer）的计算结果为true。
 
 每个符号运算符也可以指定为纯字母等效项。这样可以避免使用的符号对于嵌入表达式的文档类型具有特殊含义的问题（例如在XML文档中）。等效的文字是：
+
+- `lt` (`<`)
+- `gt` (`>`)
+- `le` (`<=`)
+- `ge` (`>=`)
+- `eq` (`==`)
+- `ne` (`!=`)
+- `div` (`/`)
+- `mod` (`%`)
+- `not` (`!`).
+
+所有的文本运算符都不区分大小写。
+
+#### 逻辑运算符
+
+SpEL支持以下逻辑运算符：
+
+- `and` (`&&`)
+- `or` (`||`)
+- `not` (`!`)
+
+下面的示例演示如何使用逻辑运算符
+
+```java
+// -- AND --
+
+// evaluates to false
+boolean falseValue = parser.parseExpression("true and false").getValue(Boolean.class);
+
+// evaluates to true
+String expression = "isMember('Nikola Tesla') and isMember('Mihajlo Pupin')";
+boolean trueValue = parser.parseExpression(expression).getValue(societyContext, Boolean.class);
+
+// -- OR --
+
+// evaluates to true
+boolean trueValue = parser.parseExpression("true or false").getValue(Boolean.class);
+
+// evaluates to true
+String expression = "isMember('Nikola Tesla') or isMember('Albert Einstein')";
+boolean trueValue = parser.parseExpression(expression).getValue(societyContext, Boolean.class);
+
+// -- NOT --
+
+// evaluates to false
+boolean falseValue = parser.parseExpression("!true").getValue(Boolean.class);
+
+// -- AND and NOT --
+String expression = "isMember('Nikola Tesla') and !isMember('Mihajlo Pupin')";
+boolean falseValue = parser.parseExpression(expression).getValue(societyContext, Boolean.class);
+```
+
+#### 数学运算符
+
+你可以在数字和字符串上使用加法运算符。你只能对数字使用减法，乘法和除法运算符。你还可以使用模数（％）和指数幂（^）运算符。强制执行标准运算符优先级。以下示例显示了正在使用的数学运算符：
+
+```java
+// Addition
+int two = parser.parseExpression("1 + 1").getValue(Integer.class);  // 2
+
+String testString = parser.parseExpression(
+        "'test' + ' ' + 'string'").getValue(String.class);  // 'test string'
+
+// Subtraction
+int four = parser.parseExpression("1 - -3").getValue(Integer.class);  // 4
+
+double d = parser.parseExpression("1000.00 - 1e4").getValue(Double.class);  // -9000
+
+// Multiplication
+int six = parser.parseExpression("-2 * -3").getValue(Integer.class);  // 6
+
+double twentyFour = parser.parseExpression("2.0 * 3e0 * 4").getValue(Double.class);  // 24.0
+
+// Division
+int minusTwo = parser.parseExpression("6 / -3").getValue(Integer.class);  // -2
+
+double one = parser.parseExpression("8.0 / 4e0 / 2").getValue(Double.class);  // 1.0
+
+// Modulus
+int three = parser.parseExpression("7 % 4").getValue(Integer.class);  // 3
+
+int one = parser.parseExpression("8 / 5 % 2").getValue(Integer.class);  // 1
+
+// Operator precedence
+int minusTwentyOne = parser.parseExpression("1+2-3*8").getValue(Integer.class);  // -21
+```
+
+#### 赋值运算符
+
+要设置属性，请使用赋值运算符（=）。这通常在对setValue的调用内完成，但也可以在对getValue的调用内完成。下面的清单显示了使用赋值运算符的两种方法：
+
+```java
+Inventor inventor = new Inventor();
+EvaluationContext context = SimpleEvaluationContext.forReadWriteDataBinding().build();
+
+parser.parseExpression("Name").setValue(context, inventor, "Aleksandar Seovic");
+
+// alternatively
+String aleks = parser.parseExpression(
+        "Name = 'Aleksandar Seovic'").getValue(context, inventor, String.class);
+```
+
+### 类型
+
+你可以使用特殊的T运算符来指定*java.lang.Class*（类型）的实例。静态方法也可以通过使用此运算符来调用。 StandardEvaluationContext使用TypeLocator查找类型，而StandardTypeLocator（可以替换）是在了解*java.lang*包的情况下构建的。这意味着对*java.lang*中的类型的T（）引用不需要完全限定，但是所有其他类型引用都必须是完全限定的。下面的示例演示如何使用T运算符：
+
+```java
+Class dateClass = parser.parseExpression("T(java.util.Date)").getValue(Class.class);
+
+Class stringClass = parser.parseExpression("T(String)").getValue(Class.class);
+
+boolean trueValue = parser.parseExpression(
+        "T(java.math.RoundingMode).CEILING < T(java.math.RoundingMode).FLOOR")
+        .getValue(Boolean.class);
+```
+
+### 构造器
+
+你可以使用new运算符来调用构造函数。除基本类型（int，float等）和String以外的所有其他类都应使用完全限定的类名。下面的示例演示如何使用new运算符调用构造函数：
+
+```java
+Inventor einstein = p.parseExpression(
+        "new org.spring.samples.spel.inventor.Inventor('Albert Einstein', 'German')")
+        .getValue(Inventor.class);
+
+//create new inventor instance within add method of List
+p.parseExpression(
+        "Members.add(new org.spring.samples.spel.inventor.Inventor(
+            'Albert Einstein', 'German'))").getValue(societyContext);
+```
+
+### 变量
+
+你可以使用#variableName语法在表达式中引用变量。通过在EvaluationContext实现上使用setVariable方法设置变量。
+
+> 有效的变量名称必须由以下一个或多个受支持的字符组成。
+>
+> - letters: `A` to `Z` and `a` to `z`
+> - digits: `0` to `9`
+> - underscore: `_`
+> - dollar sign: `$`
+
+以下示例显示了如何使用变量。
+
+```java
+Inventor tesla = new Inventor("Nikola Tesla", "Serbian");
+
+EvaluationContext context = SimpleEvaluationContext.forReadWriteDataBinding().build();
+context.setVariable("newName", "Mike Tesla");
+
+parser.parseExpression("Name = #newName").getValue(context, tesla);
+System.out.println(tesla.getName())  // "Mike Tesla"
+```
+
+#### #this和#root变量
+
+#this变量始终是定义的，并且引用当前的评估对象。始终定义#root变量，并引用根上下文对象。尽管#this可能随表达式的组成部分的求值而变化，但#root始终引用根。以下示例说明如何使用#this和#root变量：
+
+```java
+// create an array of integers
+List<Integer> primes = new ArrayList<Integer>();
+primes.addAll(Arrays.asList(2,3,5,7,11,13,17));
+
+// create parser and set variable 'primes' as the array of integers
+ExpressionParser parser = new SpelExpressionParser();
+EvaluationContext context = SimpleEvaluationContext.forReadOnlyDataAccess();
+context.setVariable("primes", primes);
+
+// all prime numbers > 10 from the list (using selection ?{...})
+// evaluates to [11, 13, 17]
+List<Integer> primesGreaterThanTen = (List<Integer>) parser.parseExpression(
+        "#primes.?[#this>10]").getValue(context);
+```
+
+### Functions
+
+你可以通过注册可以在表达式字符串中调用的用户定义函数来扩展SpEL。该函数通过EvaluationContext注册。下面的示例显示如何注册用户定义的函数：
+
+```java
+Method method = ...;
+
+EvaluationContext context = SimpleEvaluationContext.forReadOnlyDataBinding().build();
+context.setVariable("myFunction", method);
+```
+
+例如，考虑以下用于反转字符串的实用程序方法：
+
+```java
+public abstract class StringUtils {
+
+    public static String reverseString(String input) {
+        StringBuilder backwards = new StringBuilder(input.length());
+        for (int i = 0; i < input.length(); i++) {
+            backwards.append(input.charAt(input.length() - 1 - i));
+        }
+        return backwards.toString();
+    }
+}
+```
+
+然后，你可以注册并使用前面的方法，如以下示例所示：
+
+```java
+ExpressionParser parser = new SpelExpressionParser();
+
+EvaluationContext context = SimpleEvaluationContext.forReadOnlyDataBinding().build();
+context.setVariable("reverseString",
+        StringUtils.class.getDeclaredMethod("reverseString", String.class));
+
+String helloWorldReversed = parser.parseExpression(
+        "#reverseString('hello')").getValue(context, String.class);
+```
+
+### Bean引用
+
+如果评估上下文已使用bean解析器配置，则可以使用@符号从表达式中查找bean。以下示例显示了如何执行此操作：
+
+```java
+ExpressionParser parser = new SpelExpressionParser();
+StandardEvaluationContext context = new StandardEvaluationContext();
+context.setBeanResolver(new MyBeanResolver());
+
+// This will end up calling resolve(context,"something") on MyBeanResolver during evaluation
+Object bean = parser.parseExpression("@something").getValue(context);
+```
+
+要访问工厂bean本身，你应该在bean名称前加上＆符号。以下示例显示了如何执行此操作：
+
+```java
+ExpressionParser parser = new SpelExpressionParser();
+StandardEvaluationContext context = new StandardEvaluationContext();
+context.setBeanResolver(new MyBeanResolver());
+
+// This will end up calling resolve(context,"&foo") on MyBeanResolver during evaluation
+Object bean = parser.parseExpression("&foo").getValue(context);
+```
