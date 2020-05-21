@@ -1,0 +1,73 @@
+---
+[Aspect Oriented Programming with Spring](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop)
+---
+
+面向切面的编程（AOP）通过提供另一种思考程序结构的方式来补充面向对象的编程（OOP）。 OOP中模块化的关键单元是类，而在AOP中模块化是切面。切面使关注点（例如事务管理）的模块化可以跨越多种类型和对象。 （这种关注在AOP文献中通常被称为“跨领域”关注。）
+
+Spring的关键组件之一是AOP框架。尽管Spring IoC容器不依赖于AOP（这意味着你不需要的话可以不使用AOP），但AOP是对Spring IoC的补充，以提供功能非常强大的中间件解决方案。
+
+> Spring AOP 和 AspectJ的切入点
+>
+> Spring提供了使用基于[schema-based approach](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-schema)或[@AspectJ annotation style](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-ataspectj)来编写自定义切面的简单而强大的方法。这两种样式都提供了完全类型化的建议，并使用了AspectJ切入点语言，同时仍使用Spring AOP进行编织。
+>
+> 本章讨论基于架构和基于@AspectJ的AOP支持。[下一章](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-api)将讨论较低级别的AOP支持。
+
+AOP在Spring框架中用于:
+
+- 提供声明式企业服务。此类服务中最重要的是[declarative transaction management](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/data-access.html#transaction-declarative).
+- 让用户实现自定义切面，并用AOP补充其对OOP的使用。
+
+> 如果你只对通用声明性服务或其他预包装的声明性中间件服务（例如池）感兴趣，则无需直接使用Spring AOP，并且可以跳过本章的大部分内容。
+
+## AOP概念
+
+首先让我们定义一些主要的AOP概念和术语。这些术语不是特定于Spring的。不幸的是，AOP术语并不是特别直观。但是，如果使用Spring自己的术语，将会更加令人困惑。
+
+- Aspect:涉及多个类别的关注点的模块化。事务管理是企业Java应用程序中横切关注的一个很好的例子。在Spring AOP中，切面是通过使用常规类（[schema-based approach](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-schema)）或使用@Aspect注解（ [@AspectJ style](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-ataspectj)）注解的常规类来实现的。
+- Join point:在程序执行过程中的一点，例如方法的执行或异常的处理。在Spring AOP中，连接点始终代表方法的执行。
+- Advice:切面在特定的连接点处采取的操作。不同类型的建议包括“around”，“before”和“after”建议。 （Advice类型将在后面讨论。）包括Spring在内的许多AOP框架都将建议建模为拦截器，并在连接点周围维护一系列拦截器。
+- Pointcut:与join point匹配的谓词。Advice与Pointcut表达式关联，并在与该切入点匹配的任何连接点处运行（例如，执行具有特定名称的方法）。切入点表达式匹配的连接点的概念是AOP的核心，默认情况下，Spring使用AspectJ切入点表达语言。
+- Intruduction:代表类型声明其他方法或字段。 Spring AOP允许你向任何建议对象引入新的接口（和相应的实现）。例如，你可以使用Intruduction使Bean实现IsModified接口，以简化缓存。 （在AspectJ社区中，介绍被称为类型间声明。）
+- Target object:一个或多个切面建议的对象。也称为“建议对象”。由于Spring AOP是使用运行时代理实现的，因此该对象始终是代理对象。
+- AOP proxy:由AOP框架创建的一个对象，用于实现切面合同（建议方法执行等）。在Spring Framework中，AOP代理是JDK动态代理或CGLIB代理。
+- Weaving:将切面与其他应用程序类型或对象链接以创建建议的对象。这可以在编译时（例如，使用AspectJ编译器），加载时或在运行时完成。像其他纯Java AOP框架一样，Spring AOP在运行时执行编织。
+
+Spring AOP包括以下类型的Advice:
+
+- Before advice:在连接点之前运行的建议，但是它不能阻止执行流程继续进行到连接点（除非它引发异常）。
+- After returning advice:在连接点正常完成后要运行的建议（例如，如果方法返回而没有引发异常）。
+- After throwing advice:如果方法因抛出异常而退出，则执行建议。
+- After (finally) advice:无论连接点退出的方式如何（正常或特殊返回），均应执行建议。
+- Around advice:围绕连接点的建议，例如方法调用。这是最有力的建议。周围建议可以在方法调用之前和之后执行自定义行为。它还负责选择是返回连接点还是通过返回其自身的返回值或引发异常走捷径建议的方法执行。
+
+围绕建议(Around advice)是最通用的建议。由于Spring AOP与AspectJ一样，提供了各种建议类型，因此我们建议你使用功能最弱的建议类型，以实现所需的行为。例如，如果你只需要使用方法的返回值更新缓存，则最好使用返回后的建议(After returing advice)而不是周围的建议(Around advice)，尽管周围的建议可以完成相同的事情。使用最具体的建议类型可提供更简单的编程模型，并减少出错的可能性。例如，你不需要在用于周围建议的JoinPoint上调用proce()方法，因此，你不会失败。
+
+所有建议参数都是静态类型的，因此你可以使用适当类型（例如，从方法执行返回的值的类型）而不是对象数组的建议参数。
+
+切入点匹配的连接点的概念是AOP的关键，它与仅提供拦截功能的旧技术有所不同。切入点使建议的目标独立于面向对象的层次结构。例如，你可以将提供声明性事务管理的环绕建议应用于跨越多个对象（例如服务层中的所有业务操作）的一组方法。
+
+## Spring AOP能力和目标
+
+Spring AOP是用纯Java实现的。不需要特殊的编译过程。 Spring AOP不需要控制类加载器的层次结构，因此适合在Servlet容器或应用程序服务器中使用。
+
+Spring AOP当前仅支持方法执行连接点（建议在Spring Bean上执行方法）。尽管可以在不破坏核心Spring AOP API的情况下添加对字段拦截的支持，但并未实现字段拦截。如果需要建议字段访问和更新连接点，请考虑使用诸如AspectJ之类的语言。
+
+Spring AOP的AOP方法不同于大多数其他AOP框架。目的不是提供最完整的AOP实现（尽管Spring AOP相当强大）。相反，其目的是在AOP实现和Spring IoC之间提供紧密的集成，以帮助解决企业应用程序中的常见问题。
+
+因此，例如，通常将Spring Framework的AOP功能与Spring IoC容器结合使用。通过使用常规bean定义语法来配置切面（尽管这允许强大的“自动代理”功能）。这是与其他AOP实现的关键区别。使用Spring AOP不能轻松或高效地完成某些事情，例如建议非常细粒度的对象（通常是域对象）。在这种情况下，AspectJ是最佳选择。但是，我们的经验是，Spring AOP可以为企业Java应用程序中的大多数问题提供出色的解决方案。
+
+Spring AOP从未努力与AspectJ竞争以提供全面的AOP解决方案。我们认为，基于代理的框架（如Spring AOP）和成熟的框架（如AspectJ）都是有价值的，它们是互补的，而不是竞争。 Spring无缝地将Spring AOP和IoC与AspectJ集成在一起，以在基于Spring的一致应用程序架构中支持AOP的所有使用。这种集成不会影响Spring AOP API或AOP Alliance API。 Spring AOP仍然向后兼容。请参阅[下一章](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-api )，以讨论Spring AOP API。
+
+> Spring框架的宗旨之一是非侵入性。这是一个想法，你不应被迫将特定于框架的类和接口引入业务或域模型。但是，在某些地方，Spring Framework确实为你提供了将特定于Spring Framework的依赖项引入代码库的选项。提供此类选项的理由是，在某些情况下，以这种方式阅读或编码某些特定功能可能会变得更加容易。但是，Spring框架（几乎）总是为你提供选择:你可以自由地就哪个选项最适合你的特定用例或场景做出明智的决定。
+>
+> 与本章相关的一种选择是选择哪种AOP框架（以及哪种AOP样式）。你可以选择AspectJ或Spring AOP。你也可以选择@AspectJ注解样式方法或Spring XML配置样式方法。本章选择首先介绍@AspectJ风格的方法不应被视为Spring团队比Spring XML配置风格更喜欢@AspectJ注解风格的方法。
+>
+> 有关每种样式的“为什么和为什么”的更完整讨论，请参见[Choosing which AOP Declaration Style to Use](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-choosing)
+
+## AOP代理
+
+Spring AOP默认将标准JDK动态代理用于AOP代理。这使得可以代理任何接口（或一组接口）。
+
+Spring AOP也可以使用CGLIB代理。这对于代理类而不是接口是必需的。默认情况下，如果业务对象未实现接口，则使用CGLIB。由于对接口而不是对类进行编程是一种好习惯，因此业务类通常实现一个或多个业务接口。在那些需要建议在接口上未声明的方法或需要将代理对象作为具体类型传递给方法的情况下（在极少数情况下），可以[强制使用CGLIB](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-proxying )。
+
+掌握Spring AOP是基于代理的这一事实很重要。请参阅[Understanding AOP Proxies](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-understanding-aop-proxies)以全面了解此实现细节的实际含义。
