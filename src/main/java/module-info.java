@@ -7,6 +7,8 @@ module spring_start {
     requires junit;
     requires spring.core;
     requires spring.web;
+
+    requires org.aspectj.weaver;
 //    。。。
 //    java.beans居然在这个模块
     requires java.desktop;

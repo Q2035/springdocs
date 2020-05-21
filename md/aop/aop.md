@@ -71,3 +71,75 @@ Spring AOP默认将标准JDK动态代理用于AOP代理。这使得可以代理�
 Spring AOP也可以使用CGLIB代理。这对于代理类而不是接口是必需的。默认情况下，如果业务对象未实现接口，则使用CGLIB。由于对接口而不是对类进行编程是一种好习惯，因此业务类通常实现一个或多个业务接口。在那些需要建议在接口上未声明的方法或需要将代理对象作为具体类型传递给方法的情况下（在极少数情况下），可以[强制使用CGLIB](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-proxying )。
 
 掌握Spring AOP是基于代理的这一事实很重要。请参阅[Understanding AOP Proxies](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-understanding-aop-proxies)以全面了解此实现细节的实际含义。
+
+## @AspectJ 支持
+
+@AspectJ是一种将切面声明为带有注解的常规Java类的样式。 @AspectJ样式是[AspectJ project](https://www.eclipse.org/aspectj)在AspectJ 5版本中引入的。 Spring使用AspectJ提供的用于切入点解析和匹配的库来解释与AspectJ 5相同的注解。但是，AOP运行时仍然是纯Spring 
+AOP，并且不依赖于AspectJ编译器或编织器。
+
+> 使用AspectJ编译器和weaver可以使用完整的AspectJ语言，有关在[Using AspectJ with Spring Applications](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-using-aspectj).进行了讨论。
+
+### 启用@AspectJ支持
+
+要在Spring配置中使用@AspectJ切面，你需要启用Spring支持以基于@AspectJ切面配置Spring AOP，并基于这些切面是否建议对Bean进行自动代理。通过自动代理，我们的意思是，如果Spring确定一个或多个切面建议一个bean，它会自动为该bean生成一个代理来拦截方法调用并确保按需执行建议。
+
+可以使用XML或Java样式的配置来启用@AspectJ支持。无论哪种情况，你都需要确保AspectJ的Aspectjweaver.jar库位于应用程序的类路径（版本1.8或更高版本）上。该库在AspectJ发行版的lib目录或Maven中央仓库中可用。
+
+#### 通过Java配置启用@AspectJ支持
+
+要通过Java @Configuration启用@AspectJ支持，请添加@EnableAspectJAutoProxy注解，如以下示例所示：
+
+```java
+@Configuration
+@EnableAspectJAutoProxy
+public class AppConfig {
+
+}
+```
+
+#### 通过XML配置启用@AspectJ支持
+
+要通过基于XML的配置启用@AspectJ支持，请使用aop:aspectj-autoproxy元素，如以下示例所示：
+
+```xml
+<aop:aspectj-autoproxy/>
+```
+
+假定你使用[XML Schema-based configuration](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#xsd-schemas)中所述的架构支持。有关如何在aop名称空间中导入标签的信息，请参见 [the AOP schema](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#xsd-schemas-aop)。
+
+### 声明一个切面
+
+启用@AspectJ支持后，Spring会自动检测在应用程序上下文中使用@AspectJ切面（具有@Aspect注解）的类定义的任何bean，并用于配置Spring AOP。接下来的两个示例显示了一个不太有用的切面所需的最小定义。
+
+两个示例中的第一个示例显示了应用程序上下文中的常规bean定义，该定义指向具有@Aspect注解的bean类：
+
+```xml
+<bean id="myAspect" class="org.xyz.NotVeryUsefulAspect">
+    <!-- configure properties of the aspect here -->
+</bean>
+```
+
+这两个示例中的第二个示例显示了NotVeryUsefulAspect类定义，该类定义使用*org.aspectj.lang.annotation.Aspect*注解进行注解；
+
+```java
+package org.xyz;
+import org.aspectj.lang.annotation.Aspect;
+
+@Aspect
+public class NotVeryUsefulAspect {
+
+}
+```
+
+切面（使用@Aspect注解的类）可以具有方法和字段，与任何其他类相同。它们还可以包含切入点，建议和介绍（类型间）声明。
+
+> 通过组件扫描自动检测切面
+>
+> 你可以将切面类注册为Spring XML配置中的常规bean，也可以通过类路径扫描自动检测它们-与其他任何Spring管理的bean一样。但是，请注意，@Aspect注解不足以在类路径中进行自动检测。为此，你需要添加一个单独的@Component注解（或者，或者，按照Spring的组件扫描程序的规则，有条件的自定义构造型注解）。
+
+> 向其他切面提供建议？
+>
+> 在Spring AOP中，切面本身不能成为其他切面的建议目标。类上的@Aspect注解将其标记为一个切面，因此将其从自动代理中排除。
+
+### 声明切入点
+
