@@ -143,3 +143,54 @@ public class NotVeryUsefulAspect {
 
 ### 声明切入点
 
+切入点确定了感兴趣的连接点，从而使我们能够控制何时执行建议。 Spring AOP仅支持Spring Bean的方法执行连接点，因此你可以将切入点视为与Spring Bean上的方法执行匹配。切入点声明由两部分组成：一个包含名称和任何参数的签名，以及一个切入点表达式，该切入点表达式精确确定我们感兴趣的方法执行。在AOP的@AspectJ注解样式中，常规方法定义提供了切入点签名。使用@Pointcut注解指示切入点表达式（用作切入点签名的方法必须具有void返回类型）。
+
+一个示例可能有助于使切入点签名和切入点表达式之间的区别变得清晰。下面的示例定义一个名为anyOldTransfer的切入点，该切入点与任何名为transfer的方法的执行相匹配：
+
+```java
+@Pointcut("execution(* transfer(..))") // the pointcut expression
+private void anyOldTransfer() {} // the pointcut signature
+```
+
+形成@Pointcut注解的值的切入点表达式是一个常规的AspectJ 5切入点表达式。有关AspectJ的切入点语言的完整讨论，请参见 [AspectJ Programming Guide](https://www.eclipse.org/aspectj/doc/released/progguide/index.html)（以及扩展，包括[AspectJ 5 Developer’s Notebook](https://www.eclipse.org/aspectj/doc/released/adk15notebook/index.html)）或有关AspectJ的书籍之一（如Colyer等人的《Eclipse AspectJ》，或由Ramnivas Laddad撰写的《 AspectJ in Action》）。
+
+#### 支持的切入点指示符
+
+Spring AOP支持以下在切入点表达式中使用的AspectJ切入点指示符（PCD）：
+
+- execution：用于匹配方法执行的连接点。这是使用Spring AOP时要使用的主要切入点指示符。
+- within：将匹配限制为某些类型内的连接点（使用Spring AOP时，在匹配类型内声明的方法的执行）。
+- this：限制匹配到连接点（使用Spring AOP时方法的执行），其中bean引用（Spring AOP代理）是给定类型的实例。
+- target：限制匹配到连接点（使用Spring AOP时方法的执行），其中目标对象（代理的应用程序对象）是给定类型的实例。
+- args：将匹配限制为连接点（使用Spring AOP时方法的执行），其中参数是给定类型的实例。
+- @target：限制匹配到连接点（使用Spring AOP时方法的执行）的匹配，其中执行对象的类具有给定类型的注解。
+- @args：限制匹配的连接点（使用Spring AOP时方法的执行），其中传递的实际参数的运行时类型具有给定类型的注解。
+- @within：限制匹配到具有给定注解的类型内的连接点（使用Spring AOP时，使用给定注解的类型中声明的方法的执行）。
+- @annotation：将匹配限制为连接点的主题（在Spring AOP中正在执行的方法）具有给定注解的连接点。
+
+> 其他切入点类型
+>
+> 完整的AspectJ切入点语言支持Spring不支持的其他切入点指示符：调用，获取，设置，预初始化，静态初始化，初始化，处理程序，建议执行，内部代码，cflow，cflowbelow，if，@this和@withincode。在Spring AOP解释的切入点表达式中使用这些切入点指示符会导致抛出IllegalArgumentException。
+>
+> Spring AOP支持的切入点指示符集合可能会在将来的版本中扩展，以支持更多的AspectJ切入点指示符。
+
+由于Spring AOP仅将匹配限制为仅方法执行连接点，因此前面对切入点指示符的讨论所给出的定义比在AspectJ编程指南中所能找到的要窄。此外，AspectJ本身具有基于类型的语义，并且在执行连接点处，此对象和目标都引用同一个对象：执行该方法的对象。
+Spring AOP是基于代理的系统，可区分代理对象本身（绑定到此对象）和代理后面的目标对象（绑定到目标）。
+
+> 由于Spring的AOP框架基于代理的性质，因此根据定义，不会拦截目标对象内的调用。对于JDK代理，只能拦截代理上的公共接口方法调用。使用CGLIB，将拦截代理上的公共方法和受保护的方法调用（必要时甚至包可见的方法）。但是，通常应通过公共签名设计通过代理进行的常见交互。
+>
+> 请注意，切入点定义通常与任何拦截方法匹配。如果严格地将切入点设置为仅公开使用，即使在CGLIB代理方案中通过代理可能存在非公开交互，也需要相应地进行定义。
+>
+> 如果你的拦截需要在目标类中包括方法调用甚至构造函数，请考虑使用Spring驱动的 [native AspectJ weaving](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-aj-ltw)，而不是Spring的基于代理的AOP框架。这构成了具有不同特征的AOP使用模式，因此请确保在做出决定之前先熟悉编织。
+
+Spring AOP还支持其他名为bean的PCD。使用PCD，可以将连接点的匹配限制为特定的命名Spring Bean或一组命名Spring Bean（使用通配符时）。 Bean PCD具有以下形式：
+
+```java
+bean(idOrNameOfBean)
+```
+
+idOrNameOfBean令牌可以是任何Spring bean的名称。提供了使用\*字符的有限通配符支持，因此，如果为Spring bean建立了一些命名约定，则可以编写bean PCD表达式来选择它们。与其他切入点指示符一样，bean PCD可以与&&（和），||（或），和！ （否定）运算符一起使用。
+
+> Bean PCD仅在Spring AOP中受支持，而在本机AspectJ编织中不受支持。它是AspectJ定义的标准PCD的特定于Spring的扩展，因此不适用于@Aspect模型中声明的方面。
+>
+> Bean PCD在实例级别（基于Spring bean名称概念构建）上运行，而不是仅在类型级别（基于编织的AOP受其限制）上运行。基于实例的切入点指示符是Spring基于代理的AOP框架的特殊功能，并且与Spring bean工厂紧密集成，因此可以自然而直接地通过名称识别特定bean。
