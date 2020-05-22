@@ -287,4 +287,93 @@ public class SystemArchitecture {
 
 你可以在需要切入点表达式的任何地方引用在此方面定义的切入点。例如，要使服务层具有事务性，你可以编写以下内容:
 
+```xml
+<aop:config>
+    <aop:advisor
+        pointcut="com.xyz.someapp.SystemArchitecture.businessService()"
+        advice-ref="tx-advice"/>
+</aop:config>
+
+<tx:advice id="tx-advice">
+    <tx:attributes>
+        <tx:method name="*" propagation="REQUIRED"/>
+    </tx:attributes>
+</tx:advice>
+```
+
 在[Schema-based AOP Support](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-schema)中讨论了\<aop:config>和\<aop:advisor>元素。 [Transaction Management](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/data-access.html#transaction)中讨论事务元素。
+
+#### 例子
+
+Spring AOP用户可能最常使用执行切入点指示符。执行表达式的格式如下：
+
+```
+execution(modifiers-pattern? ret-type-pattern declaring-type-pattern?name-pattern(param-pattern)
+                throws-pattern?)
+```
+
+除了返回类型模式（前面的代码片段中的ret-type-pattern），名称模式和参数模式以外的所有部分都是可选的。返回类型模式确定该方法的返回类型必须是什么才能使连接点匹配。\*最常用作返回类型模式。它匹配任何返回类型。仅当方法返回给定类型时，标准类型名称才匹配。名称模式与方法名称匹配。你可以将\*通配符用作名称模式的全部或一部分。如果你指定了声明类型模式，请在其后加上。将其加入名称模式组件。参数模式稍微复杂一些：（）匹配不带参数的方法，而（..）匹配任意数量（零个或多个）的参数。（\*）模式与采用任何类型的一个参数的方法匹配。 （\*，String）与采用两个参数的方法匹配。第一个可以是任何类型，而第二个必须是String。有关更多信息，请查阅AspectJ编程指南的“[Language Semantics](https://www.eclipse.org/aspectj/doc/released/progguide/semantics-pointcuts.html)”部分。
+
+以下示例显示了一些常用的切入点表达式：
+
+- 任何公共方法的执行：
+
+  ```
+  execution(public * *(..))
+  ```
+
+- 名称以set开头的任何方法的执行：
+
+  ```
+  execution(* set*(..))
+  ```
+
+- AccountService接口定义的任何方法的执行：
+
+  ```
+  execution(* com.xyz.service.AccountService.*(..))
+  ```
+
+- service包中定义的任何方法的执行：
+
+  ```
+  execution(* com.xyz.service.*.*(..))
+  ```
+
+- service包或其子包之一中定义的任何方法的执行：
+
+  ```
+  execution(* com.xyz.service..*.*(..))
+  ```
+
+- service包中的任何连接点（仅在Spring AOP中执行方法）：
+
+  ```
+  within(com.xyz.service..*)
+  ```
+
+- 代理实现AccountService接口的任何连接点（仅在Spring AOP中是方法执行）：
+
+  ```
+   this(com.xyz.service.AccountService)
+  ```
+
+> “this”通常以绑定形式使用。有关如何在建议正文中使代理对象可用的信息，请参阅“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
+
+- 目标对象实现AccountService接口的任何连接点（仅在Spring AOP中执行方法）：
+
+  ```
+  target(com.xyz.service.AccountService)
+  ```
+
+  > “目标”通常以绑定形式使用。有关如何使目标对象在建议正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
+
+- 任何采用单个参数并且在运行时传递的参数为Serializable的连接点（仅在Spring AOP中是方法执行）：
+
+  ```
+  args(java.io.Serializable)
+  ```
+
+  > “ args”通常以绑定形式使用。有关如何使方法参数在建议正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
+
+- 
