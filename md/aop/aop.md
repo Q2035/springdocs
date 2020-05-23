@@ -352,7 +352,7 @@ execution(modifiers-pattern? ret-type-pattern declaring-type-pattern?name-patter
   within(com.xyz.service..*)
   ```
 
-- 代理实现AccountService接口的任何连接点（仅在Spring AOP中是方法执行）：
+- 代理实现AccountService接口的任何连接点（仅在Spring AOP中方法执行）：
 
   ```
    this(com.xyz.service.AccountService)
@@ -368,7 +368,7 @@ execution(modifiers-pattern? ret-type-pattern declaring-type-pattern?name-patter
 
   > “目标”通常以绑定形式使用。有关如何使目标对象在建议正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
 
-- 任何采用单个参数并且在运行时传递的参数为Serializable的连接点（仅在Spring AOP中是方法执行）：
+- 任何采用单个参数并且在运行时传递的参数为Serializable的连接点（仅在Spring AOP中方法执行）：
 
   ```
   args(java.io.Serializable)
@@ -376,4 +376,55 @@ execution(modifiers-pattern? ret-type-pattern declaring-type-pattern?name-patter
 
   > “ args”通常以绑定形式使用。有关如何使方法参数在建议正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
 
-- 
+  请注意，此示例中给出的切入点与execution（* *（java.io.Serializable））不同。如果在运行时传递的参数为Serializable，则args版本匹配；如果方法签名声明单个类型为Serializable的参数，则执行版本匹配。
+
+- 目标对象具有@Transactional注解的任何连接点（仅在Spring AOP中执行方法）：
+
+  ```
+  @target(org.springframework.transaction.annotation.Transactional)
+  ```
+
+  > 你也可以在绑定形式中使用“ @target”。有关如何使注解对象在建议正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
+
+- 目标对象的声明类型具有@Transactional注解的任何连接点（仅在Spring AOP中方法执行）：
+
+  ```
+  @within(org.springframework.transaction.annotation.Transactional)
+  ```
+
+  > 你也可以在绑定形式中使用“ @within”。有关如何使注解对象在建议正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
+
+- 任何执行方法带有@Transactional注解的联接点（仅在Spring AOP中执行方法）：
+
+  ```
+  @annotation(org.springframework.transaction.annotation.Transactional)
+  ```
+
+  > 你也可以在绑定形式中使用“ @annotation”。有关如何使注解对象在建议正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
+
+- 任何采用单个参数的联接点（仅在Spring AOP中是方法执行），并且传递的参数的运行时类型具有@Classified注解：
+
+  ```
+  @args(com.xyz.security.Classified)
+  ```
+
+  > 你也可以在绑定形式中使用“@args”。请参阅“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分，如何使建议对象中的注解对象可用。
+
+- 名为tradeService的Spring bean上的任何连接点（仅在Spring AOP中执行方法）：
+
+  ```
+  bean(tradeService)
+  ```
+
+- Spring Bean上具有与通配符表达式\* Service匹配的名称的任何连接点（仅在Spring AOP中才执行方法）：
+
+  ```
+  bean(*Service)
+  ```
+
+#### 写好切入点
+
+在编译期间，AspectJ处理切入点优化匹配性能。检查代码并确定每个连接点是否（静态或动态）匹配给定的切入点是一个耗费资源的过程。 （动态匹配意味着无法从静态分析中完全确定匹配，并且在代码中进行测试以确定在运行代码时是否存在实际匹配）。首次遇到切入点声明时，AspectJ将其重写为匹配过程的最佳形式。这是什么意思？基本上，切入点以DNF（析取范式）重写，并且对切入点的组件进行排序，以便首先检查那些资源消耗较低的组件。这意味着你不必担心理解各种切入点指示符的性能，并且可以在切入点声明中以任何顺序提供它们。
+
+但是，AspectJ只能使用所告诉的内容。为了获得最佳的匹配性能，你应该考虑他们试图达到的目标，并在定义中尽可能缩小匹配的搜索空间。现有的指示符自然分为三类之一：同类，作用域和上下文：
+
