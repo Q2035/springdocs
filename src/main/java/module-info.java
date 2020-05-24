@@ -19,8 +19,11 @@ module spring_start {
     opens com.test.chapter02.pojo;
     opens com.test.chapter02.config;
     opens com.test.chapter03.config;
+    opens com.test.chapter05.aop;
+
     exports com.test.chapter02.config;
     exports com.test.chapter02.pojo;
     exports com.test.chapter03.pojo;
     exports com.test.chapter04.spel;
+    exports com.test.chapter05.pojo;
 }

@@ -38,9 +38,9 @@ Spring AOP包括以下类型的Advice:
 - After returning advice:在连接点正常完成后要运行的建议（例如，如果方法返回而没有引发异常）。
 - After throwing advice:如果方法因抛出异常而退出，则执行建议。
 - After (finally) advice:无论连接点退出的方式如何（正常或特殊返回），均应执行建议。
-- Around advice:围绕连接点的建议，例如方法调用。这是最有力的建议。周围建议可以在方法调用之前和之后执行自定义行为。它还负责选择是返回连接点还是通过返回其自身的返回值或引发异常走捷径建议的方法执行。
+- Around advice:围绕连接点的建议，例如方法调用。这是最有力的建议。环绕建议可以在方法调用之前和之后执行自定义行为。它还负责选择是返回连接点还是通过返回其自身的返回值或引发异常走捷径建议的方法执行。
 
-围绕建议(Around advice)是最通用的建议。由于Spring AOP与AspectJ一样，提供了各种建议类型，因此我们建议你使用功能最弱的建议类型，以实现所需的行为。例如，如果你只需要使用方法的返回值更新缓存，则最好使用返回后的建议(After returing advice)而不是周围的建议(Around advice)，尽管周围的建议可以完成相同的事情。使用最具体的建议类型可提供更简单的编程模型，并减少出错的可能性。例如，你不需要在用于周围建议的JoinPoint上调用proce()方法，因此，你不会失败。
+环绕建议(Around advice)是最通用的建议。由于Spring AOP与AspectJ一样，提供了各种建议类型，因此我们建议你使用功能最弱的建议类型，以实现所需的行为。例如，如果你只需要使用方法的返回值更新缓存，则最好使用返回后的建议(After returing advice)而不是周围的建议(Around advice)，尽管周围的建议可以完成相同的事情。使用最具体的建议类型可提供更简单的编程模型，并减少出错的可能性。例如，你不需要在用于环绕建议的JoinPoint上调用proce()方法，因此，你不会失败。
 
 所有建议参数都是静态类型的，因此你可以使用适当类型（例如，从方法执行返回的值的类型）而不是对象数组的建议参数。
 
@@ -135,7 +135,7 @@ public class NotVeryUsefulAspect {
 
 > 通过组件扫描自动检测切面
 >
-> 你可以将切面类注册为Spring XML配置中的常规bean，也可以通过类路径扫描自动检测它们-与其他任何Spring管理的bean一样。但是，请注意，@Aspect注解不足以在类路径中进行自动检测。为此，你需要添加一个单独的@Component注解（或者，或者，按照Spring的组件扫描程序的规则，有条件的自定义构造型注解）。
+> 你可以将切面类注册为Spring XML配置中的常规bean，也可以通过类路径扫描自动检测它们——与其他任何Spring管理的bean一样。但是，请注意，@Aspect注解不足以在类路径中进行自动检测。为此，你需要添加一个单独的@Component注解（或者，按照Spring的组件扫描程序的规则，有条件的自定义构造型注解）。
 
 > 向其他切面提供建议？
 >
@@ -191,7 +191,7 @@ bean(idOrNameOfBean)
 
 idOrNameOfBean令牌可以是任何Spring bean的名称。提供了使用\*字符的有限通配符支持，因此，如果为Spring bean建立了一些命名约定，则可以编写bean PCD表达式来选择它们。与其他切入点指示符一样，bean PCD可以与&&（和），||（或），和！ （否定）运算符一起使用。
 
-> Bean PCD仅在Spring AOP中受支持，而在本机AspectJ编织中不受支持。它是AspectJ定义的标准PCD的特定于Spring的扩展，因此不适用于@Aspect模型中声明的方面。
+> Bean PCD仅在Spring AOP中受支持，而在本机AspectJ编织中不受支持。它是AspectJ定义的标准PCD的特定于Spring的扩展，因此不适用于@Aspect模型中声明的切面。
 >
 > Bean PCD在实例级别（基于Spring bean名称概念构建）上运行，而不是仅在类型级别（基于编织的AOP受其限制）上运行。基于实例的切入点指示符是Spring基于代理的AOP框架的特殊功能，并且与Spring bean工厂紧密集成，因此可以自然而直接地通过名称识别特定bean。
 
@@ -222,7 +222,7 @@ private void tradingOperation() {}
 
 #### 共享通用切入点定义
 
-在使用企业应用程序时，开发人员通常希望从多个方面引用应用程序的模块和特定的操作集。我们建议为此定义一个“ SystemArchitecture”方面，以捕获常见的切入点表达式。这样的方面通常类似于以下示例:
+在使用企业应用程序时，开发人员通常希望从多个切面引用应用程序的模块和特定的操作集。我们建议为此定义一个“ SystemArchitecture”切面，以捕获常见的切入点表达式。这样的切面通常类似于以下示例:
 
 ```java
 package com.xyz.someapp;
@@ -285,7 +285,7 @@ public class SystemArchitecture {
 }
 ```
 
-你可以在需要切入点表达式的任何地方引用在此方面定义的切入点。例如，要使服务层具有事务性，你可以编写以下内容:
+你可以在需要切入点表达式的任何地方引用在此切面定义的切入点。例如，要使服务层具有事务性，你可以编写以下内容:
 
 ```xml
 <aop:config>
@@ -312,7 +312,7 @@ execution(modifiers-pattern? ret-type-pattern declaring-type-pattern?name-patter
                 throws-pattern?)
 ```
 
-除了返回类型模式（前面的代码片段中的ret-type-pattern），名称模式和参数模式以外的所有部分都是可选的。返回类型模式确定该方法的返回类型必须是什么才能使连接点匹配。\*最常用作返回类型模式。它匹配任何返回类型。仅当方法返回给定类型时，标准类型名称才匹配。名称模式与方法名称匹配。你可以将\*通配符用作名称模式的全部或一部分。如果你指定了声明类型模式，请在其后加上。将其加入名称模式组件。参数模式稍微复杂一些：（）匹配不带参数的方法，而（..）匹配任意数量（零个或多个）的参数。（\*）模式与采用任何类型的一个参数的方法匹配。 （\*，String）与采用两个参数的方法匹配。第一个可以是任何类型，而第二个必须是String。有关更多信息，请查阅AspectJ编程指南的“[Language Semantics](https://www.eclipse.org/aspectj/doc/released/progguide/semantics-pointcuts.html)”部分。
+除了返回类型模式（前面的代码片段中的ret-type-pattern），名称模式和参数模式以外的所有部分都是可选的。返回类型模式确定该方法的返回类型必须是什么才能使连接点匹配。\*最常用作返回类型模式。它匹配任何返回类型。仅当方法返回给定类型时，标准类型名称才匹配。名称模式与方法名称匹配。你可以将\*通配符用作名称模式的全部或一部分。如果你指定了声明类型模式，请在其后加上。将其加入名称模式组件。参数模式稍微复杂一些：()匹配不带参数的方法，而（..）匹配任意数量（零个或多个）的参数。（\*）模式与采用任何类型的一个参数的方法匹配。 （\*，String）与采用两个参数的方法匹配。第一个可以是任何类型，而第二个必须是String。有关更多信息，请查阅AspectJ编程指南的“[Language Semantics](https://www.eclipse.org/aspectj/doc/released/progguide/semantics-pointcuts.html)”部分。
 
 以下示例显示了一些常用的切入点表达式：
 
@@ -428,3 +428,203 @@ execution(modifiers-pattern? ret-type-pattern declaring-type-pattern?name-patter
 
 但是，AspectJ只能使用所告诉的内容。为了获得最佳的匹配性能，你应该考虑他们试图达到的目标，并在定义中尽可能缩小匹配的搜索空间。现有的指示符自然分为三类之一：同类，作用域和上下文：
 
+- 同类指示者选择一种特殊的连接点：`execution`, `get`, `set`, `call`, and `handler`
+- 作用域指定者选择一组感兴趣的连接点（可能有多种）：`within` and `withincode`
+- 上下文指示符根据上下文匹配（并可选地绑定）：`this`, `target`, and `@annotation`
+
+编写正确的切入点至少应包括前两种类型（种类和作用域）。你可以包括上下文指示符以根据连接点上下文进行匹配，也可以绑定该上下文以在建议中使用。仅提供同类的标识符或仅提供上下文的标识符是可行的，但是由于额外的处理和分析，可能会影响编织性能（使用的时间和内存）。范围指定符的匹配非常快，使用它们的使用意味着AspectJ可以非常迅速地消除不应进一步处理的连接点组。一个好的切入点应尽可能包括一个切入点。
+
+### 声明Advice
+
+建议与切入点表达式关联，并且在切入点匹配的方法执行之前，之后或周围运行。切入点表达式可以是对命名切入点的简单引用，也可以是就地声明的切入点表达式。
+
+#### Before Advice
+
+你可以使用@Before注解在一个切面中声明先建议：
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+
+@Aspect
+public class BeforeExample {
+
+    @Before("com.xyz.myapp.SystemArchitecture.dataAccessOperation()")
+    public void doAccessCheck() {
+        // ...
+    }
+
+}
+```
+
+你可以使用@Before注解在一个切面中声明先建议(before advice)：
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+
+@Aspect
+public class BeforeExample {
+
+    @Before("com.xyz.myapp.SystemArchitecture.dataAccessOperation()")
+    public void doAccessCheck() {
+        // ...
+    }
+
+}
+```
+
+如果使用就地切入点表达式，则可以将前面的示例重写为以下示例：
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+
+@Aspect
+public class BeforeExample {
+
+    @Before("execution(* com.xyz.myapp.dao.*.*(..))")
+    public void doAccessCheck() {
+        // ...
+    }
+
+}
+```
+
+#### After Returning Advice
+
+返回建议后，当匹配的方法执行正常返回时运行建议。你可以使用@AfterReturning注解进行声明：
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.AfterReturning;
+
+@Aspect
+public class AfterReturningExample {
+
+    @AfterReturning("com.xyz.myapp.SystemArchitecture.dataAccessOperation()")
+    public void doAccessCheck() {
+        // ...
+    }
+
+}
+```
+
+> 你可以在同一切面内拥有多个建议声明（以及其他成员）。在这些示例中，我们仅显示单个建议声明，以集中每个建议的效果。
+
+有时，你需要在建议正文中访问返回的实际值。你可以使用@AfterReturning的形式绑定返回值以获取该访问，如以下示例所示：
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.AfterReturning;
+
+@Aspect
+public class AfterReturningExample {
+
+    @AfterReturning(
+        pointcut="com.xyz.myapp.SystemArchitecture.dataAccessOperation()",
+        returning="retVal")
+    public void doAccessCheck(Object retVal) {
+        // ...
+    }
+
+}
+```
+
+返回属性中使用的名称必须与advice方法中的参数名称相对应。当方法执行返回时，返回值将作为相应的参数值传递到通知方法。返回子句也将匹配限制为仅返回指定类型值的方法执行（在这种情况下为Object，它匹配任何返回值）。
+
+请注意，返回建议后使用时，不可能返回完全不同的引用。
+
+#### After Throwing Advice
+
+抛出建议后，当匹配的方法执行通过抛出异常退出时运行。你可以使用@AfterThrowing注解进行声明，如以下示例所示：
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.AfterThrowing;
+
+@Aspect
+public class AfterThrowingExample {
+
+    @AfterThrowing("com.xyz.myapp.SystemArchitecture.dataAccessOperation()")
+    public void doRecoveryActions() {
+        // ...
+    }
+
+}
+```
+
+通常，你希望通知仅在引发给定类型的异常时才运行，并且你通常还需要访问通知正文中的引发异常。你可以使用throwing属性来限制匹配（如果需要）（否则，请使用Throwable作为异常类型），并将抛出的异常绑定到advice参数。以下示例显示了如何执行此操作：
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.AfterThrowing;
+
+@Aspect
+public class AfterThrowingExample {
+
+    @AfterThrowing(
+        pointcut="com.xyz.myapp.SystemArchitecture.dataAccessOperation()",
+        throwing="ex")
+    public void doRecoveryActions(DataAccessException ex) {
+        // ...
+    }
+
+}
+```
+
+throwing属性中使用的名称必须与advice方法中的参数名称相对应。当通过抛出异常退出方法执行时，该异常将作为相应的参数值传递给通知方法。throwing子句还将匹配仅限制为抛出指定类型的异常（在这种情况下为DataAccessException）的方法执行。
+
+#### After (Finally) Advice
+
+当匹配的方法执行退出时，通知（最终）运行。通过使用@After注释声明它。之后必须准备处理正常和异常返回条件的建议。它通常用于释放资源和类似目的。以下示例显示了最终建议后的用法：
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.After;
+
+@Aspect
+public class AfterFinallyExample {
+
+    @After("com.xyz.myapp.SystemArchitecture.dataAccessOperation()")
+    public void doReleaseLock() {
+        // ...
+    }
+
+}
+```
+
+#### Around Advice
+
+最后一种建议是环绕建议。环绕建议在匹配方法的执行过程中“围绕”运行。它有机会在方法执行之前和之后进行工作，并确定何时，如何或者根本不执行该方法。如果需要以线程安全的方式（例如，启动和停止计时器）在方法执行之前和之后共享状态，则通常使用环绕建议。始终使用最贴合要求的建议形式来满足你（也就是说，可以使用Before Advice，请勿使用环绕建议）。
+
+通过使用@Around批注来声明环绕建议。咨询方法的第一个参数必须是ProceedingJoinPoint类型。在建议的正文中，在ProceedingJoinPoint上调用proceed()会使基础方法执行。前进方法也可以传入Object[]。数组中的值用作方法执行时的参数。
+
+> 当用Object []进行调用proceed时，proceed的行为与AspectJ编译器所编译的环绕通知的行为略有不同。对于使用传统AspectJ语言编写的环绕通知，传递给procced的参数数量必须与传递给环绕通知的参数数量（而不是基础连接点采用的参数数量）相匹配，并且传递给给定的参数位置会取代该值绑定到的实体的连接点处的原始值。
+> Spring采取的方法更简单，并且更适合其基于代理的，仅执行的语义。如果你编译为Spring编写的@AspectJ切面，并在AspectJ编译器和weaver中使用参数进行处理，则只需要意识到这种区别。有一种方法可以在Spring
+> AOP和AspectJ之间100％兼容，并且在[下面有关建议参数的部分](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-ataspectj-advice-params)中对此进行了讨论。
+
+以下示例显示了如何使用环绕建议：
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.ProceedingJoinPoint;
+
+@Aspect
+public class AroundExample {
+
+    @Around("com.xyz.myapp.SystemArchitecture.businessService()")
+    public Object doBasicProfiling(ProceedingJoinPoint pjp) throws Throwable {
+        // start stopwatch
+        Object retVal = pjp.proceed();
+        // stop stopwatch
+        return retVal;
+    }
+
+}
+```
+
+环绕建议返回的值是该方法的调用者看到的返回值。例如，如果一个简单的缓存切面有一个值，则它可以从缓存中返回一个值，如果没有，则调用proceed()。请注意，在环绕建议的正文中，procced可能被调用一次，多次或完全不被调用。所有这些都是合法的。
+
+#### Advice Parameters
