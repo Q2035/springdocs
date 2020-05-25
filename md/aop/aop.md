@@ -628,3 +628,84 @@ public class AroundExample {
 环绕建议返回的值是该方法的调用者看到的返回值。例如，如果一个简单的缓存切面有一个值，则它可以从缓存中返回一个值，如果没有，则调用proceed()。请注意，在环绕建议的正文中，procced可能被调用一次，多次或完全不被调用。所有这些都是合法的。
 
 #### Advice Parameters
+
+Spring提供了完全类型化的建议，这意味着你可以在建议签名中声明所需的参数（如我们先前在返回和抛出示例中所看到的），而不是一直使用Object[]数组。我们将在本节的后面部分介绍如何使参数和其他上下文值可用于建议主体。首先，我们看一下如何编写通用建议，以了解该建议当前建议的方法。
+
+##### 访问当前的JoinPoint
+
+任何建议方法都可以将*org.aspectj.lang.JoinPoint*类型的参数声明为它的第一个参数（请注意，需要环绕建议以声明ProceedingJoinPoint类型的第一个参数，该类型是JoinPoint的子类。JoinPoint接口提供了一个几种有用的方法：
+
+- getArgs()：返回方法参数。
+- getThis()：返回代理对象。
+- getTarget()：返回目标对象。
+- getSignature()：返回建议方法的描述。
+- toString()：打印有关建议方法的有用描述。
+
+有关更多详细信息，请参见 [javadoc](https://www.eclipse.org/aspectj/doc/released/runtime-api/org/aspectj/lang/JoinPoint.html)。
+
+##### 将参数传递给建议
+
+我们已经看到了如何绑定返回的值或异常值（在返回建议和抛出异常建议之后使用）。要使参数值可用于建议正文，可以使用args的绑定形式。如果在args表达式中使用参数名称代替类型名称，则在调用建议时会将相应参数的值作为参数值传递。一个例子应该使这一点更清楚。假设你要建议以Account对象作为第一个参数的DAO操作的执行，并且你需要在建议正文中访问该帐户。可以编写以下内容：
+
+```java
+@Before("com.xyz.myapp.SystemArchitecture.dataAccessOperation() && args(account,..)")
+public void validateAccount(Account account) {
+    // ...
+}
+```
+
+切入点表达式的args（account，..）部分有两个用途。首先，它将匹配限制为方法采用至少一个参数且传递给该参数的参数为Account实例的那些方法执行。其次，它通过account参数使建议的实际Account对象可用。
+
+有关更多详细信息，请参见AspectJ编程指南。
+
+代理对象（this），目标对象（target）和注解（@ within，@ target，@ annotation和@args）都可以以类似的方式绑定。接下来的两个示例显示如何匹配使用@Auditable注解的方法的执行并提取审计代码：
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Auditable {
+    AuditCode value();
+}
+```
+
+这两个示例中的第二个示例显示了与@Auditable方法的执行相匹配的建议：
+
+```java
+@Before("com.xyz.lib.Pointcuts.anyPublicMethod() && @annotation(auditable)")
+public void audit(Auditable auditable) {
+    AuditCode code = auditable.value();
+    // ...
+}
+```
+
+##### 建议参数和泛型
+
+Spring AOP可以处理类声明和方法参数中使用的泛型。假设具有如下通用类型：
+
+```java
+public interface Sample<T> {
+    void sampleGenericMethod(T param);
+    void sampleGenericCollectionMethod(Collection<T> param);
+}
+```
+
+你可以通过在要拦截方法的参数类型中键入advice参数，将方法类型的拦截限制为某些参数类型：
+
+```java
+@Before("execution(* ..Sample+.sampleGenericMethod(*)) && args(param)")
+public void beforeSampleMethod(MyType param) {
+    // Advice implementation
+}
+```
+
+这种方法不适用于通用集合。因此，不能按以下方式定义切入点：
+
+```java
+@Before("execution(* ..Sample+.sampleGenericCollectionMethod(*)) && args(param)")
+public void beforeSampleMethod(Collection<MyType> param) {
+    // Advice implementation
+}
+```
+
+为了使这项工作有效，我们将不得不检查集合的每个元素，这是不合理的，因为我们也无法决定通常如何处理空值。要实现类似的目的，必须将参数键入Collection <？>并手动检查元素的类型。
+
