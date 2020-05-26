@@ -1,6 +1,10 @@
 ---
 [Aspect Oriented Programming with Spring](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop)
 ---
+---
+Aspect Oriented Programming with Spring(Version 5.2.6.RELEASE)
+
+---
 
 面向切面的编程（AOP）通过提供另一种思考程序结构的方式来补充面向对象的编程（OOP）。 OOP中模块化的关键单元是类，而在AOP中模块化是切面。切面使关注点（例如事务管理）的模块化可以跨越多种类型和对象。 （这种关注在AOP文献中通常被称为“跨领域”关注。）
 
@@ -708,4 +712,60 @@ public void beforeSampleMethod(Collection<MyType> param) {
 ```
 
 为了使这项工作有效，我们将不得不检查集合的每个元素，这是不合理的，因为我们也无法决定通常如何处理空值。要实现类似的目的，必须将参数键入Collection <？>并手动检查元素的类型。
+
+##### 确定参数名称
+
+通知调用中的参数绑定依赖于切入点表达式中使用的名称与切入点方法签名中声明的参数名称的匹配。通过Java反射无法获得参数名称，因此Spring AOP使用以下策略来确定参数名称：
+
+- 如果用户已明确指定参数名称，则使用指定的参数名称。建议和切入点注解均具有可选的argNames属性，你可以使用该属性来指定带注解的方法的参数名称。这些参数名称在运行时可用。以下示例显示如何使用argNames属性：
+
+  ```java
+  @Before(value="com.xyz.lib.Pointcuts.anyPublicMethod() && target(bean) && @annotation(auditable)",
+          argNames="bean,auditable")
+  public void audit(Object bean, Auditable auditable) {
+      AuditCode code = auditable.value();
+      // ... use code and bean
+  }
+  ```
+
+  对JoinPoint，ProceedingJoinPoint和JoinPoint.StaticPart类型的第一个参数给予的特殊处理对于不收集任何其他联接点上下文的建议实例特别方便。在这种情况下，你可以省略argNames属性。例如，以下建议无需声明argNames属性：
+
+  ```java
+  @Before("com.xyz.lib.Pointcuts.anyPublicMethod()")
+  public void audit(JoinPoint jp) {
+      // ... use jp
+  }
+  ```
+
+  使用'argNames'属性有点笨拙，因此，如果未指定'argNames'属性，Spring AOP将查看该类的调试信息，并尝试从局部变量表中确定参数名称。只要已使用调试信息（至少是“-g：vars”）编译了类，此信息就会存在。启用此标志时进行编译的结果是：（1）你的代码更易于理解（逆向工程），（2）类文件的大小略大（通常无关紧要），（3）删除未使用的本地代码的优化变量不适用于你的编译器。换句话说，通过启用该标志，你应该不会遇到任何困难。
+
+  > 如果即使没有调试信息，但是使用了AspectJ(ajc)编译文件，则无需添加argNames属性，因为编译器会保留所需的信息。
+
+- 如果在没有必要调试信息的情况下编译了代码，Spring AOP将尝试推断绑定变量与参数的配对（例如，如果切入点表达式中仅绑定了一个变量，并且建议方法仅接受一个参数，则配对很明显）。如果在给定可用信息的情况下变量的绑定不明确，则抛出AmbiguousBindingException。
+- 如果以上所有策略均失败，则抛出IllegalArgumentException。
+
+##### Proceeding with Arguments
+
+前面我们提到过，我们将描述如何编写一个在Spring AOP和AspectJ中始终有效的参数的proceed调用。解决方案是确保建议签名按顺序绑定每个方法参数。以下示例显示了如何执行此操作：
+
+```java
+@Around("execution(List<Account> find*(..)) && " +
+        "com.xyz.myapp.SystemArchitecture.inDataAccessLayer() && " +
+        "args(accountHolderNamePattern)")
+public Object preProcessQueryPattern(ProceedingJoinPoint pjp,
+        String accountHolderNamePattern) throws Throwable {
+    String newPattern = preProcess(accountHolderNamePattern);
+    return pjp.proceed(new Object[] {newPattern});
+}
+```
+
+在许多情况下，无论如何都要进行此绑定（如上例所示）。
+
+#### Advice Ordering
+
+当多条建议都希望在同一连接点上运行时会发生什么？ Spring AOP遵循与AspectJ相同的优先级规则来确定建议执行的顺序。优先级最高的建议首先“在途中”运行（因此，给定两条优先(before)建议，则优先级最高的建议首先运行）。从连接点“出路”时，优先级最高的建议将最后运行（因此，给定两条后置通知，优先级最高的建议将之后运行）。
+
+当在不同切面定义的两条建议都需要在同一连接点上运行时，除非另行指定，否则执行顺序是不确定的。你可以通过指定优先级来控制执行顺序。通过在方面类中实现*org.springframework.core.Ordered*接口或使用Order注解对其进行注解，可以通过常规的Spring方法来完成。给定两个切面，从Ordered.getValue（）（或注解值）返回较低值的切面具有较高的优先级。
+
+当在相同切面定义的两条建议都需要在同一连接点上运行时，其顺序是未定义的（因为无法通过反射为javac编译的类检索声明顺序）。考虑将这些建议方法折叠为每个方面类中每个连接点的一个建议方法，或将建议重构为单独的方面类。
 
