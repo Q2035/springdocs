@@ -21,6 +21,8 @@
 5.25:relieved:
 唉，要考试了，翻译进度慢一点吧
 
+5.29 贼难受​:cry:​
+
 ## Aspect Oriented Programming with Spring
 **翻译中**
 
