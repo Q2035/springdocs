@@ -820,3 +820,83 @@ public class MyAspect {
 
 pertarget实例化模型的工作方式与perthis完全相同，但是它在匹配的连接点为每个唯一目标对象创建一个切面实例。
 
+### 一个AOP示例
+
+既然你已经了解了所有组成部分是如何工作的，那么我们可以将它们放在一起做一些有用的事情。
+
+有时由于并发问题（例如，死锁），业务服务的执行可能会失败。如果重试该操作，则很可能在下一次尝试中成功。对于适合在这种情况下重试的业务（不需要为解决冲突而需要返回给用户的幂等操作），我们希望透明地重试该操作，以避免客户端看到PessimisticLockingFailureException。这项要求明确地跨越了服务层中的多个服务，因此非常适合通过一个切面实施。
+
+因为我们想重试该操作，所以我们需要使用环绕通知，以便可以多次调用proced。以下清单显示了基本方面的实现：
+
+```java
+@Aspect
+public class ConcurrentOperationExecutor implements Ordered {
+
+    private static final int DEFAULT_MAX_RETRIES = 2;
+
+    private int maxRetries = DEFAULT_MAX_RETRIES;
+    private int order = 1;
+
+    public void setMaxRetries(int maxRetries) {
+        this.maxRetries = maxRetries;
+    }
+
+    public int getOrder() {
+        return this.order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    @Around("com.xyz.myapp.SystemArchitecture.businessService()")
+    public Object doConcurrentOperation(ProceedingJoinPoint pjp) throws Throwable {
+        int numAttempts = 0;
+        PessimisticLockingFailureException lockFailureException;
+        do {
+            numAttempts++;
+            try {
+                return pjp.proceed();
+            }
+            catch(PessimisticLockingFailureException ex) {
+                lockFailureException = ex;
+            }
+        } while(numAttempts <= this.maxRetries);
+        throw lockFailureException;
+    }
+
+}
+```
+
+请注意，切面实现了Ordered接口，因此我们可以将方面的优先级设置为高于事务通知（每次重试时都希望有新的事务）。 maxRetries和order属性均由Spring配置。建议的主要动作发生在doConcurrentOperation中。请注意，目前，我们将重试逻辑应用于每个businessService（）。我们尝试继续，如果失败并出现PessimisticLockingFailureException，则我们将再次尝试，除非我们用尽了所有重试尝试。
+
+相应的Spring配置如下：
+
+```xml
+<aop:aspectj-autoproxy/>
+
+<bean id="concurrentOperationExecutor" class="com.xyz.myapp.service.impl.ConcurrentOperationExecutor">
+    <property name="maxRetries" value="3"/>
+    <property name="order" value="100"/>
+</bean>
+```
+
+为了完善切面，使其仅重试幂等运算，我们可以定义以下幂等注解：
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Idempotent {
+    // marker annotation
+}
+```
+
+然后，我们可以使用注解来注解服务操作的实现。切面更改为仅重试幂等操作涉及更改切入点表达式，以便只有@Idempotent操作匹配，如下所示：
+
+```java
+@Around("com.xyz.myapp.SystemArchitecture.businessService() && " +
+        "@annotation(com.xyz.myapp.service.Idempotent)")
+public Object doConcurrentOperation(ProceedingJoinPoint pjp) throws Throwable {
+    // ...
+}
+```
+
