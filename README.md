@@ -23,6 +23,8 @@
 
 5.29 贼难受​:cry:​
 
+5.31 慢慢来
+
 ## Aspect Oriented Programming with Spring
 **翻译中**
 

@@ -1,6 +1,10 @@
 ---
 [Aspect Oriented Programming with Spring](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop)
 ---
+---
+Aspect Oriented Programming with Spring(Version 5.2.6.RELEASE)
+
+---
 
 面向切面的编程（AOP）通过提供另一种思考程序结构的方式来补充面向对象的编程（OOP）。 OOP中模块化的关键单元是类，而在AOP中模块化是切面。切面使关注点（例如事务管理）的模块化可以跨越多种类型和对象。 （这种关注在AOP文献中通常被称为“跨领域”关注。）
 
@@ -705,6 +709,7 @@ public void beforeSampleMethod(MyType param) {
 public void beforeSampleMethod(Collection<MyType> param) {
     // Advice implementation
 }
+
 ```
 
 为了使这项工作有效，我们将不得不检查集合的每个元素，这是不合理的，因为我们也无法决定通常如何处理空值。要实现类似的目的，必须将参数键入Collection <？>并手动检查元素的类型。
@@ -722,6 +727,7 @@ public void beforeSampleMethod(Collection<MyType> param) {
       AuditCode code = auditable.value();
       // ... use code and bean
   }
+  
   ```
 
   对JoinPoint，ProceedingJoinPoint和JoinPoint.StaticPart类型的第一个参数给予的特殊处理对于不收集任何其他联接点上下文的建议实例特别方便。在这种情况下，你可以省略argNames属性。例如，以下建议无需声明argNames属性：
@@ -754,6 +760,7 @@ public Object preProcessQueryPattern(ProceedingJoinPoint pjp,
     String newPattern = preProcess(accountHolderNamePattern);
     return pjp.proceed(new Object[] {newPattern});
 }
+
 ```
 
 在许多情况下，无论如何都要进行此绑定（如上例所示）。
@@ -899,4 +906,14 @@ public Object doConcurrentOperation(ProceedingJoinPoint pjp) throws Throwable {
     // ...
 }
 ```
+
+## 基于XML的AOP支持
+
+如果你更喜欢基于XML的格式，Spring还提供了使用新的aop名称空间标签定义切面的支持。支持与使用@AspectJ样式完全相同的切入点表达式和建议类型。因此，在本节中，我们将重点放在新语法上，并使读者参考上一节中的讨论（[@AspectJ support](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-ataspectj)），以了解编写切入点表达式和建议参数的绑定。
+
+要使用本节中描述的aop名称空间标签，需要导入spring-aop模式，如[XML Schema-based configuration](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#xsd-schemas).所述。有关如何在aop名称空间中导入标签的信息，请参见 [the AOP schema](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#xsd-schemas-aop).
+
+在Spring配置中，所有切面和建议程序元素都必须放在<aop：config>元素内（在应用程序上下文配置中可以有多个<aop：config>元素）。<aop：config>元素可以包含切入点，顾问程序和aspect元素（请注意，必须按此顺序声明它们）。
+
+> <aop：config>的配置样式大量使用了Spring的自动代理机制。如果你已经通过使用BeanNameAutoProxyCreator或类似方法使用显式自动代理，则可能会导致问题（例如，未编制建议）。推荐的用法模式是仅使用<aop：config>样式或仅使用AutoProxyCreator样式，并且不要混合使用。
 
