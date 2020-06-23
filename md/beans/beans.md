@@ -1,5 +1,6 @@
 ---
 [The IoC Container](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans )(Version 5.2.6.RELEASE)
+
 ---
 
 参考文档的这一部分涵盖了Spring框架必不可少的内容。
@@ -18,14 +19,14 @@
 >
 > 可以参考[Java Service Locator Pattern(服务器定位模式)](https://www.jianshu.com/p/b04fdb2d336d)
 
-<i>org.springframework.beans</i>和<i>org.springframework.context</i>包是Spring框架IoC容器的基础。beanFactory接口提供了一种更高级的配置机制，能够管理任何类型的对象。ApplicationContext则是beanFactory的子接口，它添加了：
+<i>org.springframework.beans</i>和<i>org.springframework.context</i>包是Spring框架IoC容器的基础。BeanFactory接口提供了一种更高级的配置机制，能够管理任何类型的对象。ApplicationContext则是BeanFactory的子接口，它添加了：
 
-- 与Spring AOP功能更方便的集成
+- 与Spring AOP更方便的集成
 - 消息资源处理（多用于国际化）
 - 活动发布
 - 应用层特定的上下文，例如Web应用程序中使用的WebApplicationContext
 
-简而言之，beanFactory提供了配置框架以及基本功能，而ApplicationContext则添加了很多企业级开发的功能。AppliationContext是beanFactory是beanFactory的完整超集。如果想了解更多关于beanFactory替代ApplicationContext信息的请移步[这里](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-beanfactory )。
+简而言之，BeanFactory提供了配置框架以及基本功能，而ApplicationContext则添加了很多企业级开发的功能。AppliationContext是BeanFactory的完整超集(大概是说ApplicationContext功能比BeanFacotry丰富很多)。如果想了解更多关于BeanFactory替代ApplicationContext信息的请移步[这里](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-beanfactory )。
 
 在Spring中,构成应用程序主干并由Sprng IoC容器管理的对象称之为bean。bean是由Spring IoC容器实例化、组装以及以其他方式管理的对象，否则，bean与一般对象无异。bean及其之间的依赖关系通过配置的元数据所反映。
 
@@ -33,7 +34,7 @@
 
 <i>org.springframework.context.ApplicationContext</i>接口表示Spring IoC容器，并负责bean实例化、配置和组装。容器通过读取配置元数据来获取有关要实例化、配置和组装对象的指令。配置元数据可以以XML、Java注解或Java代码表示。它可以让使用者表达出应用程序对象的各种复杂的依赖关系。
 
-Spring提供了ApplicationContext接口的几种实现。在独立应用程序中，通常会创建ClassPathXmlApplicationContext或FileSystemXmlApplicationContext的实例。尽管XML是定义配置元数据的传统格式，但是还是可以通过提供少量XML配置来声明性地启用对这些其他元数据格式的支持，从而指示容器将Java注解或代码用作元数据格式。
+Spring提供了ApplicationContext接口的几种实现。在独立应用程序中，通常会创建ClassPathXmlApplicationContext或FileSystemXmlApplicationContext的实例。尽管XML是定义配置元数据的传统格式，但是还是可以通过提供少量XML配置来声明性地启用对一些其他元数据格式的支持，从而指示容器将Java注解或代码用作元数据格式。
 
 在大多数应用场景中，不需要显式用户代码即可实例化Spring IoC容器的一个或多个实例。例如，在Web应用程序场景中，应用程序的web.xml文件中简单的8行（大约）样板通常就足够了（请参阅[Convenient ApplicationContext Instantiation for Web Applications](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#context-create )）。如果使用Spring Tools for Eclipse（Eclipse支持的开发环境），则只需单击几下鼠标或击键即可轻松创建此样板配置。
 
@@ -49,7 +50,7 @@ Spring提供了ApplicationContext接口的几种实现。在独立应用程序�
 
 > 基于XML的配置元数据并不是唯一的选择，实际上，Spring获取元数据的方式与元数据的格式无关。当前，推荐使用基于Java的配置元数据。
 
-Spring配置由容器必须管理的至少一个（通常是一个以上）bean定义组成。基于XML的配置元数据将这些bean配置为\<beans/>元素内的\<bean />元素。 Java配置通常在@Configuration类中使用@bean注解的方法。
+Spring配置由容器必须管理的至少一个（通常是一个以上）bean定义组成。基于XML的配置元数据将这些bean配置为\<beans/>元素内的\<bean />元素。 Java配置通常在@Configuration类中使用@Bean注解的方法。
 
 这些bean定义对应于组成应用程序的实际对象，比如你定义服务层对象，数据访问对象（DAO），表示对象（例如Struts Action实例），基础结构对象（例如Hibernate 
 SessionFactories，JMS队列）等等。通常，不会在容器中配置细粒度的域对象，因为创建和加载域对象通常是DAO和业务逻辑的职责。但是，可以使用Spring与AspectJ的集成来配置在IoC容器控制之外创建的对象。请参阅[Using AspectJ to dependency-inject domain objects with Spring](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-atconfigurable)。
@@ -107,10 +108,11 @@ ApplicationContext context = new ClassPathXmlApplicationContext("services.xml", 
 </beans>
 ~~~
 
-在前面的示例中，外部bean定义是从三个文件加载的：services.xml，messageSource.xml和themeSource.xml。所有位置路径都相对于进行导入的定义文件的位置，因此，services.xml必须与进行导入的文件位于同一目录或类路径位置，而messageSource.xml和themeSource.xml必须位于该位置下方的resource文件夹。如你所见，斜杠被忽略。但是，鉴于这些路径是相对的，最好不要使用任何斜线。根据Spring
-Schema，导入的文件的内容（包括\<beans />元素）必须是有效的XML bean定义。
+在前面的示例中，外部bean定义是从三个文件加载的：services.xml，messageSource.xml和themeSource.xml。所有位置路径都相对于进行导入的定义文件的位置，因此，services.xml必须与进行导入的文件位于同一目录或类路径位置，而messageSource.xml和themeSource.xml必须位于该位置下方的resource文件夹。如你所见，斜杠被忽略了。但是，鉴于这些路径是相对的，最好不要使用任何斜线。根据Spring Schema，导入的文件的内容（包括\<beans />元素）必须是有效的XML bean定义。
 
 > 最好不要使用".."操作符访问父路径资源，尤其是在使用"classpath"时，它可能会改变程序读取文件的属性，造成不必要的麻烦。
+>
+> 你始终可以使用完全限定的资源位置来代替相对路径：例如，file:C:/config/services.xml或classpath:/config/services.xml。但是请注意，你正在将应用程序的配置耦合到特定的绝对路径。通常最好为这样的绝对路径保留一个间接寻址，例如通过在运行时针对JVM系统属性解析的“ $ {…}”占位符。
 
 ### The Groovy Bean Definition DSL
 
@@ -140,7 +142,7 @@ beans {
 
 ### 使用容器
 
-ApplicationContext是维护不同bean及其依赖关系的注册表的高级工厂的接口。通过使用方法T getbean（String name，Class <T> requiredType），可以检索bean的实例。
+ApplicationContext是维护不同bean及其依赖关系的注册表的高级工厂的接口。通过使用方法T getbean(String name，Class \<T> requiredType)，可以检索bean的实例。
 
 使用ApplicationContext可以读取bean定义并访问它们，如以下示例所示：
 
@@ -161,7 +163,7 @@ List<String> userList = service.getUsernameList();
 ApplicationContext context = new GenericGroovyApplicationContext("services.groovy", "daos.groovy");
 ~~~
 
-最灵活的变体是GenericApplicationContext与读取器委托结合使用，例如，与XML文件的XmlbeanDefinitionReader结合使用，如以下示例所示：
+最灵活的变体是GenericApplicationContext与读取器委托结合使用，例如，与XML文件的XmlBeanDefinitionReader结合使用，如以下示例所示：
 
 ~~~java
 GenericApplicationContext context = new GenericApplicationContext();
@@ -169,17 +171,17 @@ new XmlBeanDefinitionReader(context).loadBeanDefinitions("services.xml", "daos.x
 context.refresh();
 ~~~
 
-还可以将GroovybeanDefinitionReader用于Groovy文件，如以下示例所示：
+还可以将GroovyBeanDefinitionReader用于Groovy文件，如以下示例所示：
 
 ~~~java
 GenericApplicationContext context = new GenericApplicationContext();
-new GroovybeanDefinitionReader(context).loadBeanDefinitions("services.groovy", "daos.groovy");
+new GroovyBeanDefinitionReader(context).loadBeanDefinitions("services.groovy", "daos.groovy");
 context.refresh();
 ~~~
 
 可以在同一ApplicationContext上混合匹配此类阅读器委托，从不同的配置源读取bean定义。
 
-然后，你可以使用getbean检索bean的实例。 ApplicationContext接口还有其他几种检索bean的方法，但是理想情况下，应用程序代码应该永远不要显式使用它们。实际上，应用程序代码应该根本不调用getbean()方法，如此可以完全不依赖于Spring API。例如，Spring与Web框架的集成为各种Web框架组件（例如控制器和JSF管理的bean）提供了依赖项注入，使你可以通过元数据（例如自动装配注解@Autowired）声明对特定bean的依赖项。
+然后，你可以使用getBean检索bean的实例。 ApplicationContext接口还有其他几种检索bean的方法，但是理想情况下，应用程序代码应该永远不要显式使用它们。实际上，应用程序代码应该根本不调用getBean()方法，如此可以完全不依赖于Spring API。例如，Spring与Web框架的集成为各种Web框架组件（例如控制器和JSF管理的bean）提供了依赖项注入，使你可以通过元数据（例如自动装配注解@Autowired）声明对特定bean的依赖项。
 
 ## Bean概览
 
@@ -226,18 +228,18 @@ id属性精确指定一个id。通常，这些名称是字母数字（“ mybean
 > 通过在类路径中进行组件扫描，Spring会按照前面描述的规则为未命名的组件生成bean名称：从本质上讲，采用简单的类名称并将其初始字符转换为小写。但是，在（不寻常的）特殊情况下，如果有多个字符并且第一个和第二个字符均为大写字母，则会保留原始大小写。这些规则与*java.beans.Introspector.decapitalize*定义的规则相同。
 >
 > ~~~java
->     public static String decapitalize(String name) {
->         if (name == null || name.length() == 0) {
->             return name;
->         }
->         if (name.length() > 1 && Character.isUpperCase(name.charAt(1)) &&
->                         Character.isUpperCase(name.charAt(0))){
->             return name;
->         }
->         char chars[] = name.toCharArray();
->         chars[0] = Character.toLowerCase(chars[0]);
->         return new String(chars);
->     }
+>  public static String decapitalize(String name) {
+>      if (name == null || name.length() == 0) {
+>          return name;
+>      }
+>      if (name.length() > 1 && Character.isUpperCase(name.charAt(1)) &&
+>                      Character.isUpperCase(name.charAt(0))){
+>          return name;
+>      }
+>      char chars[] = name.toCharArray();
+>      chars[0] = Character.toLowerCase(chars[0]);
+>      return new String(chars);
+>  }
 > ~~~
 >
 > 
@@ -352,7 +354,6 @@ public class DefaultServiceLocator {
 一个工厂类也可以包含一个以上的工厂方法，如以下示例所示：
 
 ~~~xml
-
 <bean id="serviceLocator" class="examples.DefaultServiceLocator">
     <!-- inject any dependencies required by this locator bean -->
 </bean>
@@ -446,7 +447,6 @@ public class ThingOne {
 假设ThingTwo和ThingThree类没有通过继承关联，不存在潜在的歧义。因此，以下配置可以正常工作，并且无需在\<constructor-arg />元素中显式指定构造函数参数索引或类型。
 
 ~~~xml
-
 <beans>
     <bean id="beanOne" class="x.y.ThingOne">
         <constructor-arg ref="beanTwo"/>
@@ -2124,9 +2124,9 @@ BeanPostProcessor接口定义了回调方法，你可以实施这些回调方法
 
 >  BeanPostProcessor实例在bean（或对象）实例上运行。即，Spring IoC容器实例化一个bean实例，然后BeanPostProcessor实例完成其工作。
 >
-> BeanPostProcessor实例是按容器划分作用域的。仅在使用容器层次结构时，这才有意义。如果在一个容器中定义BeanPostProcessor，则仅后处理该容器中的bean。换句话说，一个容器中定义的bean不会被另一个容器中定义的BeanPostProcessor进行后处理，即使这两个容器是同一层次结构的一部分也是如此。
+>  BeanPostProcessor实例是按容器划分作用域的。仅在使用容器层次结构时，这才有意义。如果在一个容器中定义BeanPostProcessor，则仅后处理该容器中的bean。换句话说，一个容器中定义的bean不会被另一个容器中定义的BeanPostProcessor进行后处理，即使这两个容器是同一层次结构的一部分也是如此。
 >
-> 要更改实际的bean定义（即定义bean的蓝图），你需要使用BeanFactoryPostProcessor，如[Customizing Configuration Metadata with a `BeanFactoryPostProcessor`](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-factory-extension-factory-postprocessors)中所述。
+>  要更改实际的bean定义（即定义bean的蓝图），你需要使用BeanFactoryPostProcessor，如[Customizing Configuration Metadata with a `BeanFactoryPostProcessor`](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-factory-extension-factory-postprocessors)中所述。
 
 *org.springframework.beans.factory.config.BeanPostProcessor*接口恰好由两个回调方法组成。当此类被注册为容器的后处理器时，对于容器创建的每个bean实例，后处理器都会在容器初始化方法（例如*InitializingBean.afterPropertiesSet()*或任何声明的init方法）之前，并在任何bean初始化回调之后被调用。后处理器可以对bean实例执行任何操作，包括完全忽略回调。Bean后处理器通常检查回调接口，或者可以用代理包装bean。一些Spring AOP基础结构类被实现为bean后处理器，以提供代理包装逻辑。
 
@@ -2237,7 +2237,7 @@ org.springframework.scripting.groovy.GroovyMessenger@272961
 
 >  如果要更改实际的bean实例（即从配置元数据创建的对象），则需要使用BeanPostProcessor。从技术上讲，可以在BeanFactoryPostProcessor中使用bean实例（例如，通过使用*BeanFactory.getBean()*），但这样做会导致过早的bean实例化，从而违反了标准容器的生命周期。这可能会导致负面影响，例如绕过bean的后处理。
 >
-> 同样，BeanFactoryPostProcessor实例是按容器划分作用域的。仅在使用容器层次结构时才有意义。如果在一个容器中定义BeanFactoryPostProcessor，它将仅应用于该容器中的Bean定义。一个容器中的bean定义不会由另一个容器中的BeanFactoryPostProcessor实例进行后处理，即使两个容器都属于同一层次结构也是如此。
+>  同样，BeanFactoryPostProcessor实例是按容器划分作用域的。仅在使用容器层次结构时才有意义。如果在一个容器中定义BeanFactoryPostProcessor，它将仅应用于该容器中的Bean定义。一个容器中的bean定义不会由另一个容器中的BeanFactoryPostProcessor实例进行后处理，即使两个容器都属于同一层次结构也是如此。
 
 Bean工厂后处理器在ApplicationContext中声明时会自动执行，以便将更改应用于定义容器的配置元数据。 Spring包含许多预定义的bean工厂后处理器，例如PropertyOverrideConfigurer和PropertySourcesPlaceholderConfigurer。你还可以使用自定义BeanFactoryPostProcessor，例如注册自定义属性编辑器。
 
@@ -2288,20 +2288,20 @@ PropertySourcesPlaceholderConfigurer不仅在你指定的属性文件中查找�
 
 >  可以使用PropertySourcesPlaceholderConfigurer来替换类名称，这在你必须在运行时选择特定的实现类时有时很有用。以下示例显示了如何执行此操作：
 >
-> ```xml
-> <bean class="org.springframework.beans.factory.config.PropertySourcesPlaceholderConfigurer">
->     <property name="locations">
->         <value>classpath:com/something/strategy.properties</value>
->     </property>
->     <property name="properties">
->         <value>custom.strategy.class=com.something.DefaultStrategy</value>
->     </property>
-> </bean>
-> 
-> <bean id="serviceStrategy" class="${custom.strategy.class}"/>
-> ```
+>  ```xml
+>  <bean class="org.springframework.beans.factory.config.PropertySourcesPlaceholderConfigurer">
+>   <property name="locations">
+>       <value>classpath:com/something/strategy.properties</value>
+>   </property>
+>   <property name="properties">
+>       <value>custom.strategy.class=com.something.DefaultStrategy</value>
+>   </property>
+>  </bean>
+>  
+>  <bean id="serviceStrategy" class="${custom.strategy.class}"/>
+>  ```
 >
-> 如果无法在运行时将类解析为有效的类，则将要创建的bean的解析将失败，这是在非延迟初始化bean的ApplicationContext的preInstantiateSingletons()阶段期间进行的。
+>  如果无法在运行时将类解析为有效的类，则将要创建的bean的解析将失败，这是在非延迟初始化bean的ApplicationContext的preInstantiateSingletons()阶段期间进行的。
 
 #### 示例：PropertyOverrideConfigurer
 
@@ -2522,9 +2522,9 @@ public class MovieRecommender {
 
 >  如果希望数组或列表中的项目以特定顺序排序，则目标bean可以实现*org.springframework.core.Ordered*接口或使用@Order或标准@Priority注解。否则，它们的顺序将遵循容器中相应目标bean定义的注册顺序。
 >
-> 你可以在目标类级别和@Bean方法上声明@Order注解，这可能适用于单个bean定义（如果使用同一bean类的多个定义）。 @Order值可能会影响注入点的优先级，但请注意它们不会影响单例启动顺序，这是由依赖关系和@DependsOn声明确定的正交关注点。
+>  你可以在目标类级别和@Bean方法上声明@Order注解，这可能适用于单个bean定义（如果使用同一bean类的多个定义）。 @Order值可能会影响注入点的优先级，但请注意它们不会影响单例启动顺序，这是由依赖关系和@DependsOn声明确定的正交关注点。
 >
-> 注意，标准*javax.annotation.Priority*注解在@Bean级别不可用，因为无法在方法上声明它。它的语义可以通过@Order值与@Primary结合在每种类型的单个bean上进行建模。
+>  注意，标准*javax.annotation.Priority*注解在@Bean级别不可用，因为无法在方法上声明它。它的语义可以通过@Order值与@Primary结合在每种类型的单个bean上进行建模。
 
 只要预期的键类型为String，即使是类型化的Map实例也可以自动装配。映射值包含所有预期类型的bean，并且键包含相应的bean名称，如以下示例所示：
 
@@ -3624,9 +3624,9 @@ dependencies {
 >
 > ```xml
 > <dependency>
->     <groupId>javax.inject</groupId>
->     <artifactId>javax.inject</artifactId>
->     <version>1</version>
+>  <groupId>javax.inject</groupId>
+>  <artifactId>javax.inject</artifactId>
+>  <version>1</version>
 > </dependency>
 > ```
 
@@ -3899,7 +3899,7 @@ public class AppConfig  {
 >
 > ```xml
 > <beans>
->     <context:component-scan base-package="com.acme"/>
+>  <context:component-scan base-package="com.acme"/>
 > </beans>
 > ```
 
@@ -4091,7 +4091,7 @@ public class AppConfig {
 > ```java
 > @Bean(destroyMethod="")
 > public DataSource dataSource() throws NamingException {
->     return (DataSource) jndiTemplate.lookup("MyDS");
+>  return (DataSource) jndiTemplate.lookup("MyDS");
 > }
 > ```
 >
@@ -4877,18 +4877,18 @@ spring-bean.xsd已被限制为仅允许这些元素作为文件中的最后一�
 >
 > ```xml
 > <beans xmlns="http://www.springframework.org/schema/beans"
->     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
->     xmlns:jdbc="http://www.springframework.org/schema/jdbc"
->     xmlns:jee="http://www.springframework.org/schema/jee"
->     xsi:schemaLocation="...">
+>  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>  xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+>  xmlns:jee="http://www.springframework.org/schema/jee"
+>  xsi:schemaLocation="...">
 > 
->     <!-- other bean definitions -->
+>  <!-- other bean definitions -->
 > 
->     <beans profile="production">
->         <beans profile="us-east">
->             <jee:jndi-lookup id="dataSource" jndi-name="java:comp/env/jdbc/datasource"/>
->         </beans>
->     </beans>
+>  <beans profile="production">
+>      <beans profile="us-east">
+>          <jee:jndi-lookup id="dataSource" jndi-name="java:comp/env/jdbc/datasource"/>
+>      </beans>
+>  </beans>
 > </beans>
 > ```
 >
