@@ -907,7 +907,7 @@ public Object doConcurrentOperation(ProceedingJoinPoint pjp) throws Throwable {
 }
 ```
 
-## 基于XML的AOP支持
+## 基于模式的AOP支持
 
 如果你更喜欢基于XML的格式，Spring还提供了使用新的aop名称空间标签定义切面的支持。支持与使用@AspectJ样式完全相同的切入点表达式和建议类型。因此，在本节中，我们将重点放在新语法上，并使读者参考上一节中的讨论（[@AspectJ support](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-ataspectj)），以了解编写切入点表达式和建议参数的绑定。
 
@@ -917,3 +917,37 @@ public Object doConcurrentOperation(ProceedingJoinPoint pjp) throws Throwable {
 
 > <aop：config>的配置样式大量使用了Spring的自动代理机制。如果你已经通过使用BeanNameAutoProxyCreator或类似方法使用显式自动代理，则可能会导致问题（例如，未编制建议）。推荐的用法模式是仅使用<aop：config>样式或仅使用AutoProxyCreator样式，并且不要混合使用。
 
+### 声明切面
+
+使用模式支持时，切面是在Spring应用程序上下文中定义为Bean的常规Java对象。状态和行为在对象的字段和方法中捕获，切入点和建议信息在XML中捕获。
+
+您可以使用<aop：aspect>元素声明一个切面，并使用ref属性引用该bean，如以下示例所示：
+
+```xml
+<aop:config>
+    <aop:aspect id="myAspect" ref="aBean">
+        ...
+    </aop:aspect>
+</aop:config>
+
+<bean id="aBean" class="...">
+    ...
+</bean>
+```
+
+支持切面的bean（在本例中为aBean）当然可以像配置其他Spring Bean一样进行配置并注入依赖项。
+
+### 声明切入点
+
+您可以在<aop：config>元素内声明一个命名的切入点，让切入点定义在多个切面和通知之间共享。
+
+可以定义代表服务层中任何业务服务的执行的切入点：
+
+```xml
+<aop:config>
+
+    <aop:pointcut id="businessService"
+        expression="execution(* com.xyz.myapp.service.*.*(..))"/>
+
+</aop:config>
+```

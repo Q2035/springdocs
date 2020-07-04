@@ -142,7 +142,7 @@ beans {
 
 ### 使用容器
 
-ApplicationContext是维护不同bean及其依赖关系的注册表的高级工厂的接口。通过使用方法T getbean(String name，Class \<T> requiredType)，可以检索bean的实例。
+ApplicationContext是维护不同bean及其依赖关系的注册表的高级工厂接口。通过使用方法T getbean(String name，Class \<T> requiredType)，可以检索bean的实例。
 
 使用ApplicationContext可以读取bean定义并访问它们，如以下示例所示：
 
@@ -208,8 +208,8 @@ Spring IoC容器管理一个或多个bean。这些bean是使用你提供给容�
 | Initialization method    | [Initialization Callbacks](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-factory-lifecycle-initializingbean)（初始化回调） |
 | Destruction method       | [Destruction Callbacks](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-factory-lifecycle-disposablebean)（销毁回调） |
 
-除了包含有关如何创建特定bean的信息的bean定义之外，ApplicationContext实现还允许注册在容器外部（由用户）创建的现有对象。这是通过getbeanFactory()方法访问ApplicationContext的BeanFactory来完成的，该方法返回BeanFactory的实现类
-DefaultListablebeanFactory实现。 DefaultListablebeanFactory通过registerSingleton（..）和registerbeanDefinition（..）方法支持此注册。但是，典型的应用程序只能与通过常规元数据定义的bean一起使用。
+除了包含有关如何创建特定bean的信息的bean定义之外，ApplicationContext实现还允许注册在容器外部（由用户）创建的现有对象。这是通过getBeanFactory()方法访问ApplicationContext的BeanFactory来完成的，该方法返回BeanFactory的实现类
+DefaultListableBeanFactory实现。 DefaultListableBeanFactory通过registerSingleton（..）和registerBeanDefinition（..）方法支持此注册。但是，典型的应用程序只能与通过常规元数据定义的bean一起使用。
 
 > bean元数据和手动提供的单例实例需要尽早注册，以便容器在自动装配和其他步骤中正确地推理它们。虽然在某种程度上Spring支持覆盖现有元数据和现有单例实例，但官方不支持在运行时（与对工厂的实时访问同时）对新bean的注册，可能导致并发访问异常，bean容器中的状态不一致等问题。
 
