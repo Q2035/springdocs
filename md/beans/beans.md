@@ -215,7 +215,7 @@ DefaultListableBeanFactory实现。 DefaultListableBeanFactory通过registerSing
 
 ### Bean命名
 
-每个bean具有一个或多个标识符。这些标识符在承载bean的容器内必须是唯一的。一个bean通常只有一个标识符。但是，如果需要多个，则可以设置别名。
+每个bean具有一个或多个标识符。这些标识符在承载bean的容器内必须是唯一的。一个bean通常只有一个标识符。但是，如果需要多个标识符，则可以设置别名。
 
 在基于XML的配置元数据中，可以使用id属性和name属性来指定bean标识符。 
 id属性精确指定一个id。通常，这些名称是字母数字（“ mybean”，“ someService”等），但它们也可以包含特殊字符。如果要为bean引入其他别名，还可以在name属性中指定它们，并用逗号（,），分号（;）或空格分隔。Spring历史上，在3.1之前的版本中，id属性定义为xsd：ID类型，该类型限制了可能的字符。从3.1开始，它被定义为xsd：string类型。需要注意，beanID唯一性不再由XML解析器执行，但仍由容器强制保证。
@@ -244,7 +244,7 @@ id属性精确指定一个id。通常，这些名称是字母数字（“ mybean
 >
 > 
 
-#### 在bean定义之外为bean定义别名
+#### 在Bean定义之外为Bean定义别名
 
 在bean定义中，可以使用由id属性指定的一个名称和name属性中任意数量的其他名称的组合来为bean提供多个名称。这些名称可以是同一个bean的等效别名，并且在某些情况下很有用，例如使应用中的多个组件通过bean名字指向一个通用的依赖。
 
@@ -266,14 +266,14 @@ id属性精确指定一个id。通常，这些名称是字母数字（“ mybean
 
 现在，每个组件和主应用程序都可以通过唯一的名称引用数据源，并保证不与任何其他定义冲突（有效地创建名称空间），但它们引用的是同一bean。
 
-> 如果使用Java配置，则@Bean注解可用于提供别名。有关详细信息，请参见 [Using the `@bean` Annotation](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-java-bean-annotation)。
+> 如果使用Java配置，则@Bean注解可用于提供别名。有关详细信息，请参见 [Using the `@Bean` Annotation](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-java-bean-annotation)。
 
 ### Bean实例化
 
 bean定义本质上是创建一个或多个对象的方法。当被请求时，容器将查看命名bean的方法，并使用该bean定义封装的配置元数据来创建（或获取）实际对象。
 
-如果使用基于XML配置元数据，则在\<bean/>元素的class属性中指定要实例化的对象的类型（或类）。这个class属性（在内部是beanDefinition实例的Class属性）通常是必需的。
-（有关异常，请参见[Instantiation by Using an Instance Factory Method](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-factory-class-instance-factory-method) 以及[bean Definition Inheritance](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-child-bean-definitions)。）可以通过以下两种方式之一使用Class属性：
+如果使用基于XML配置元数据，则在\<Bean/>元素的class属性中指定要实例化的对象的类型（或类）。这个class属性（在内部是BeanDefinition实例的Class属性）通常是必需的。
+（有关异常，请参见[Instantiation by Using an Instance Factory Method](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-factory-class-instance-factory-method) 以及[Bean Definition Inheritance](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-child-bean-definitions)。）可以通过以下两种方式之一使用Class属性：
 
 - 通常，在容器本身通过反射调用其构造函数直接创建bean的情况下，指定要构造的bean类，这在某种程度上等同于使用new运算符的Java代码。
 - 指定包含要创建对象的静态工厂方法的类，在不太常见的情况下，容器将在类上调用静态工厂方法以创建bean。从静态工厂方法的调用返回的对象类型可以是同一类，也可以是完全不同的另一类。
@@ -390,7 +390,7 @@ public class DefaultServiceLocator {
 
 > 在Spring文档中，“ factory bean”是指在Spring容器中配置并通过实例或静态工厂方法创建对象的bean。相比之下，FactoryBean（请注意大小写）是指特定于Spring的[`FactoryBean`](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-factory-extension-factorybean)实现类。
 
-#### 确定bean的运行时类型
+#### 确定Bean的运行时类型
 
 确定特定bean的运行时类型并非易事。 bean元数据定义中的指定类只是初始类引用，可能与声明的工厂方法结合使用，或者是FactoryBean类，这可能导致bean的运行时类型不同，或者在实例的情况下完全不进行设值工厂方法（通过指定的factory-bean名称解析）。此外，AOP代理可以使用基于接口的代理包装bean实例，而目标bean的实际类型（仅是其实现的接口）的暴露程度有限。
 
