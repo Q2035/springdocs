@@ -173,11 +173,11 @@ Spring AOP支持以下在切入点表达式中使用的AspectJ切入点指示符
 
 > 其他切入点类型
 >
-> 完整的AspectJ切入点语言支持Spring不支持的其他切入点指示符:调用，获取，设置，预初始化，静态初始化，初始化，处理程序，建议执行，内部代码，cflow，cflowbelow，if，@this和@withincode。在Spring AOP解释的切入点表达式中使用这些切入点指示符会导致抛出IllegalArgumentException。
+> 完整的AspectJ切入点语言支持Spring不支持的其他切入点指示符:call, get, set, preinitialization, staticinitialization, initialization, handler, adviceexecution, withincode, cflow, cflowbelow, if, @this, and @withincode。在Spring AOP解释的切入点表达式中使用这些切入点指示符会导致抛出IllegalArgumentException。
 >
 > Spring AOP支持的切入点指示符集合可能会在将来的版本中扩展，以支持更多的AspectJ切入点指示符。
 
-由于Spring AOP仅将匹配限制为仅方法执行连接点，因此前面对切入点指示符的讨论所给出的定义比在AspectJ编程指南中所能找到的要窄。此外，AspectJ本身具有基于类型的语义，并且在执行连接点处，此对象和目标都引用同一个对象:执行该方法的对象。
+由于Spring AOP仅将匹配限制为方法执行连接点，因此前面对切入点指示符的讨论所给出的定义比在AspectJ编程指南中所能找到的要窄。此外，AspectJ本身具有基于类型的语义，并且在执行连接点处，此对象和目标都引用同一个对象:执行该方法的对象。
 Spring AOP是基于代理的系统，可区分代理对象本身（绑定到此对象）和代理后面的目标对象（绑定到目标）。
 
 > 由于Spring的AOP框架基于代理的性质，因此根据定义，不会拦截目标对象内的调用。对于JDK代理，只能拦截代理上的公共接口方法调用。使用CGLIB，将拦截代理上的公共方法和受保护的方法调用（必要时甚至包可见的方法）。但是，通常应通过公共签名设计通过代理进行的常见交互。
@@ -213,13 +213,11 @@ private void inTrading() {}
 private void tradingOperation() {} 
 ```
 
-> `anyPublicOperation` 如果方法执行联接点表示执行，则匹配
-> 任何公共方法。
->
-> `inTrading` 如果交易模块中有方法执行，则匹配。
->
-> `tradingOperation` 如果一个方法执行代表该方法中的任何公共方法，则匹配
-> 交易模块。
+> `anyPublicOperation` 如果方法执行连接点表示执行，则匹配任何公共方法。
+> 
+>`inTrading` 如果交易模块中有方法执行，则匹配。
+> 
+>`tradingOperation` 如果一个方法执行代表该方法中的任何公共方法，则匹配交易模块。
 
 最佳实践是从较小的命名组件中构建更复杂的切入点表达式，如先前所示。按名称引用切入点时，将应用常规的Java可见性规则（你可以看到相同类型的私有切入点，层次结构中受保护的切入点，任何位置的公共切入点，等等）。可见性不影响切入点匹配。
 
