@@ -306,118 +306,118 @@ public class SystemArchitecture {
 
 #### 例子
 
-Spring AOP用户可能最常使用执行切入点指示符。执行表达式的格式如下：
+Spring AOP用户可能最常使用执行切入点指示符。执行表达式的格式如下:
 
 ```
 execution(modifiers-pattern? ret-type-pattern declaring-type-pattern?name-pattern(param-pattern)
                 throws-pattern?)
 ```
 
-除了返回类型模式（前面的代码片段中的ret-type-pattern），名称模式和参数模式以外的所有部分都是可选的。返回类型模式确定该方法的返回类型必须是什么才能使连接点匹配。\*最常用作返回类型模式。它匹配任何返回类型。仅当方法返回给定类型时，标准类型名称才匹配。名称模式与方法名称匹配。你可以将\*通配符用作名称模式的全部或一部分。如果你指定了声明类型模式，请在其后加上。将其加入名称模式组件。参数模式稍微复杂一些：()匹配不带参数的方法，而（..）匹配任意数量（零个或多个）的参数。（\*）模式与采用任何类型的一个参数的方法匹配。 （\*，String）与采用两个参数的方法匹配。第一个可以是任何类型，而第二个必须是String。有关更多信息，请查阅AspectJ编程指南的“[Language Semantics](https://www.eclipse.org/aspectj/doc/released/progguide/semantics-pointcuts.html)”部分。
+除了返回类型模式（前面的代码片段中的ret-type-pattern），名称模式和参数模式以外的所有部分都是可选的。返回类型模式确定该方法的返回类型必须是什么才能使连接点匹配。\*最常用作返回类型模式。它匹配任何返回类型。仅当方法返回给定类型时，标准类型名称才匹配。名称模式与方法名称匹配。你可以将\*通配符用作名称模式的全部或一部分。如果你指定了声明类型模式，请在其后加上。将其加入名称模式组件。参数模式稍微复杂一些:()匹配不带参数的方法，而（..）匹配任意数量（零个或多个）的参数。（\*）模式与采用任何类型的一个参数的方法匹配。 （\*，String）与采用两个参数的方法匹配。第一个可以是任何类型，而第二个必须是String。有关更多信息，请查阅AspectJ编程指南的“[Language Semantics](https://www.eclipse.org/aspectj/doc/released/progguide/semantics-pointcuts.html)”部分。
 
-以下示例显示了一些常用的切入点表达式：
+以下示例显示了一些常用的切入点表达式:
 
-- 任何公共方法的执行：
+- 任何公共方法的执行:
 
   ```
   execution(public * *(..))
   ```
 
-- 名称以set开头的任何方法的执行：
+- 名称以set开头的任何方法的执行:
 
   ```
   execution(* set*(..))
   ```
 
-- AccountService接口定义的任何方法的执行：
+- AccountService接口定义的任何方法的执行:
 
   ```
   execution(* com.xyz.service.AccountService.*(..))
   ```
 
-- service包中定义的任何方法的执行：
+- service包中定义的任何方法的执行:
 
   ```
   execution(* com.xyz.service.*.*(..))
   ```
 
-- service包或其子包之一中定义的任何方法的执行：
+- service包或其子包之一中定义的任何方法的执行:
 
   ```
   execution(* com.xyz.service..*.*(..))
   ```
 
-- service包中的任何连接点（仅在Spring AOP中执行方法）：
+- service包中的任何连接点(Join Point)（仅在Spring AOP中执行方法）:
 
   ```
   within(com.xyz.service..*)
   ```
 
-- 代理实现AccountService接口的任何连接点（仅在Spring AOP中方法执行）：
+- 实现AccountService代理接口的任何连接点（仅在Spring AOP中方法执行）:
 
   ```
    this(com.xyz.service.AccountService)
   ```
-
-> “this”通常以绑定形式使用。有关如何在建议正文中使代理对象可用的信息，请参阅“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
-
-- 目标对象实现AccountService接口的任何连接点（仅在Spring AOP中执行方法）：
+  
+  > “this”通常以绑定形式使用。有关如何在通知正文中使代理对象可用的信息，请参阅“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
+  
+- 目标对象实现AccountService接口的任何连接点（仅在Spring AOP中执行方法）:
 
   ```
   target(com.xyz.service.AccountService)
   ```
 
-  > “目标”通常以绑定形式使用。有关如何使目标对象在建议正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
+  > “target”通常以绑定形式使用。有关如何使目标对象在通知正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
 
-- 任何采用单个参数并且在运行时传递的参数为Serializable的连接点（仅在Spring AOP中方法执行）：
+- 任何采用单个参数并且在运行时传递的参数为Serializable的连接点（仅在Spring AOP中方法执行）:
 
   ```
   args(java.io.Serializable)
   ```
 
-  > “ args”通常以绑定形式使用。有关如何使方法参数在建议正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
+  > “ args”通常以绑定形式使用。有关如何使方法参数在通知正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
 
-  请注意，此示例中给出的切入点与execution（* *（java.io.Serializable））不同。如果在运行时传递的参数为Serializable，则args版本匹配；如果方法签名声明单个类型为Serializable的参数，则执行版本匹配。
+  请注意，此示例中给出的切入点与execution（* *（java.io.Serializable））不同。如果在运行时传递的参数为Serializable，则args版本匹配；如果方法签名声明单个类型为Serializable的参数，则与execution版本匹配。
 
-- 目标对象具有@Transactional注解的任何连接点（仅在Spring AOP中执行方法）：
+- 目标对象具有@Transactional注解的任何连接点（仅在Spring AOP中执行方法）:
 
   ```
   @target(org.springframework.transaction.annotation.Transactional)
   ```
 
-  > 你也可以在绑定形式中使用“ @target”。有关如何使注解对象在建议正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
+  > 你也可以在绑定形式中使用“ @target”。有关如何使注解对象在通知正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
 
-- 目标对象的声明类型具有@Transactional注解的任何连接点（仅在Spring AOP中方法执行）：
+- 目标对象的声明类型具有@Transactional注解的任何连接点（仅在Spring AOP中方法执行）:
 
   ```
   @within(org.springframework.transaction.annotation.Transactional)
   ```
 
-  > 你也可以在绑定形式中使用“ @within”。有关如何使注解对象在建议正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
+  > 你也可以在绑定形式中使用“ @within”。有关如何使注解对象在通知正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
 
-- 任何执行方法带有@Transactional注解的联接点（仅在Spring AOP中执行方法）：
+- 任何执行方法带有@Transactional注解的联接点（仅在Spring AOP中执行方法）:
 
   ```
   @annotation(org.springframework.transaction.annotation.Transactional)
   ```
 
-  > 你也可以在绑定形式中使用“ @annotation”。有关如何使注解对象在建议正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
+  > 你也可以在绑定形式中使用“ @annotation”。有关如何使注解对象在通知正文中可用的信息，请参见“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分。
 
-- 任何采用单个参数的联接点（仅在Spring AOP中是方法执行），并且传递的参数的运行时类型具有@Classified注解：
+- 任何采用单个参数的连接点（仅在Spring AOP中是方法执行），并且传递的参数的运行时类型具有@Classified注解:
 
   ```
   @args(com.xyz.security.Classified)
   ```
 
-  > 你也可以在绑定形式中使用“@args”。请参阅“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分，如何使建议对象中的注解对象可用。
+  > 你也可以在绑定形式中使用“@args”。请参阅“[Declaring Advice](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-advice)”部分，如何使通知对象中的注解对象可用。
 
-- 名为tradeService的Spring bean上的任何连接点（仅在Spring AOP中执行方法）：
+- 名为tradeService的Spring bean上的任何连接点（仅在Spring AOP中执行方法）:
 
   ```
   bean(tradeService)
   ```
 
-- Spring Bean上具有与通配符表达式\* Service匹配的名称的任何连接点（仅在Spring AOP中才执行方法）：
+- Spring Bean上具有与通配符表达式\*Service匹配的名称的任何连接点（仅在Spring AOP中才执行方法）:
 
   ```
   bean(*Service)
@@ -427,13 +427,13 @@ execution(modifiers-pattern? ret-type-pattern declaring-type-pattern?name-patter
 
 在编译期间，AspectJ处理切入点优化匹配性能。检查代码并确定每个连接点是否（静态或动态）匹配给定的切入点是一个耗费资源的过程。 （动态匹配意味着无法从静态分析中完全确定匹配，并且在代码中进行测试以确定在运行代码时是否存在实际匹配）。首次遇到切入点声明时，AspectJ将其重写为匹配过程的最佳形式。这是什么意思？基本上，切入点以DNF（析取范式）重写，并且对切入点的组件进行排序，以便首先检查那些资源消耗较低的组件。这意味着你不必担心理解各种切入点指示符的性能，并且可以在切入点声明中以任何顺序提供它们。
 
-但是，AspectJ只能使用所告诉的内容。为了获得最佳的匹配性能，你应该考虑他们试图达到的目标，并在定义中尽可能缩小匹配的搜索空间。现有的指示符自然分为三类之一：同类，作用域和上下文：
+但是，AspectJ只能使用所告诉的内容。为了获得最佳的匹配性能，你应该考虑他们试图达到的目标，并在定义中尽可能缩小匹配的搜索空间。现有的指示符自然分为三类之一:同类，作用域和上下文:
 
-- 同类指示者选择一种特殊的连接点：`execution`, `get`, `set`, `call`, and `handler`
-- 作用域指定者选择一组感兴趣的连接点（可能有多种）：`within` and `withincode`
-- 上下文指示符根据上下文匹配（并可选地绑定）：`this`, `target`, and `@annotation`
+- 同类指示者选择一种特殊的连接点:`execution`, `get`, `set`, `call`, and `handler`
+- 作用域指定者选择一组感兴趣的连接点（可能有多种）:`within` and `withincode`
+- 上下文指示符根据上下文匹配（并可选地绑定）:`this`, `target`, and `@annotation`
 
-编写正确的切入点至少应包括前两种类型（种类和作用域）。你可以包括上下文指示符以根据连接点上下文进行匹配，也可以绑定该上下文以在建议中使用。仅提供同类的标识符或仅提供上下文的标识符是可行的，但是由于额外的处理和分析，可能会影响编织性能（使用的时间和内存）。范围指定符的匹配非常快，使用它们的使用意味着AspectJ可以非常迅速地消除不应进一步处理的连接点组。一个好的切入点应尽可能包括一个切入点。
+编写正确的切入点至少应包括前两种类型（种类和作用域）。你可以包括上下文指示符以根据连接点上下文进行匹配，也可以绑定该上下文以在通知中使用。仅提供同类的标识符或仅提供上下文的标识符是可行的，但是由于额外的处理和分析，可能会影响编织性能（使用的时间和内存）。范围指定符的匹配非常快，使用它们的使用意味着AspectJ可以非常迅速地消除不应进一步处理的连接点组。一个好的切入点应尽可能包括一个切入点。
 
 ### 声明Advice
 
@@ -441,7 +441,7 @@ execution(modifiers-pattern? ret-type-pattern declaring-type-pattern?name-patter
 
 #### Before Advice
 
-你可以使用@Before注解在一个切面中声明先建议：
+你可以使用@Before注解在一个切面中声明前置通知:
 
 ```java
 import org.aspectj.lang.annotation.Aspect;
@@ -458,7 +458,7 @@ public class BeforeExample {
 }
 ```
 
-你可以使用@Before注解在一个切面中声明先建议(before advice)：
+你可以使用@Before注解在一个切面中声明前置通知(before advice):
 
 ```java
 import org.aspectj.lang.annotation.Aspect;
@@ -475,7 +475,7 @@ public class BeforeExample {
 }
 ```
 
-如果使用就地切入点表达式，则可以将前面的示例重写为以下示例：
+如果使用切入点表达式，则可以将前面的示例重写为以下示例:
 
 ```java
 import org.aspectj.lang.annotation.Aspect;
@@ -494,7 +494,7 @@ public class BeforeExample {
 
 #### After Returning Advice
 
-返回建议后，当匹配的方法执行正常返回时运行建议。你可以使用@AfterReturning注解进行声明：
+返回值后，当匹配的方法执行正常返回时运行后置通知。你可以使用@AfterReturning注解进行声明:
 
 ```java
 import org.aspectj.lang.annotation.Aspect;
@@ -502,8 +502,7 @@ import org.aspectj.lang.annotation.AfterReturning;
 
 @Aspect
 public class AfterReturningExample {
-
-    @AfterReturning("com.xyz.myapp.SystemArchitecture.dataAccessOperation()")
+ @AfterReturning("com.xyz.myapp.SystemArchitecture.dataAccessOperation()")
     public void doAccessCheck() {
         // ...
     }
@@ -511,9 +510,9 @@ public class AfterReturningExample {
 }
 ```
 
-> 你可以在同一切面内拥有多个建议声明（以及其他成员）。在这些示例中，我们仅显示单个建议声明，以集中每个建议的效果。
+> 你可以在同一切面内拥有多个通知声明（以及其他成员）。在这些示例中，我们仅显示单个通知声明，以集中每个通知的效果。
 
-有时，你需要在建议正文中访问返回的实际值。你可以使用@AfterReturning的形式绑定返回值以获取该访问，如以下示例所示：
+有时，你需要在通知正文中访问返回的实际值。你可以使用@AfterReturning的形式绑定返回值以获取该访问，如以下示例所示:
 
 ```java
 import org.aspectj.lang.annotation.Aspect;
@@ -534,11 +533,11 @@ public class AfterReturningExample {
 
 返回属性中使用的名称必须与advice方法中的参数名称相对应。当方法执行返回时，返回值将作为相应的参数值传递到通知方法。返回子句也将匹配限制为仅返回指定类型值的方法执行（在这种情况下为Object，它匹配任何返回值）。
 
-请注意，返回建议后使用时，不可能返回完全不同的引用。
+请注意，返回后通知使用时，不可能返回完全不同的引用。
 
 #### After Throwing Advice
 
-抛出建议后，当匹配的方法执行通过抛出异常退出时运行。你可以使用@AfterThrowing注解进行声明，如以下示例所示：
+抛出异常后通知，当匹配的方法执行抛出异常退出时运行。你可以使用@AfterThrowing注解进行声明，如以下示例所示:
 
 ```java
 import org.aspectj.lang.annotation.Aspect;
@@ -555,7 +554,7 @@ public class AfterThrowingExample {
 }
 ```
 
-通常，你希望通知仅在引发给定类型的异常时才运行，并且你通常还需要访问通知正文中的引发异常。你可以使用throwing属性来限制匹配（如果需要）（否则，请使用Throwable作为异常类型），并将抛出的异常绑定到advice参数。以下示例显示了如何执行此操作：
+通常，你希望通知仅在引发给定类型的异常时才运行，并且你通常还需要访问通知正文中的引发异常。你可以使用throwing属性来限制匹配（如果需要）（否则，请使用Throwable作为异常类型），并将抛出的异常绑定到advice参数。以下示例显示了如何执行此操作:
 
 ```java
 import org.aspectj.lang.annotation.Aspect;
@@ -578,7 +577,7 @@ throwing属性中使用的名称必须与advice方法中的参数名称相对应
 
 #### After (Finally) Advice
 
-当匹配的方法执行退出时，通知（最终）运行。通过使用@After注释声明它。之后必须准备处理正常和异常返回条件的建议。它通常用于释放资源和类似目的。以下示例显示了最终建议后的用法：
+当匹配的方法执行退出时，后置通知运行。通过使用@After注解声明它。之后必须准备处理正常和异常返回条件的通知。它通常用于释放资源类似的目的。以下示例显示了后置通知的用法:
 
 ```java
 import org.aspectj.lang.annotation.Aspect;
@@ -597,15 +596,14 @@ public class AfterFinallyExample {
 
 #### Around Advice
 
-最后一种建议是环绕建议。环绕建议在匹配方法的执行过程中“围绕”运行。它有机会在方法执行之前和之后进行工作，并确定何时，如何或者根本不执行该方法。如果需要以线程安全的方式（例如，启动和停止计时器）在方法执行之前和之后共享状态，则通常使用环绕建议。始终使用最贴合要求的建议形式来满足你（也就是说，可以使用Before Advice，请勿使用环绕建议）。
+最后一种是环绕通知。环绕通知在匹配方法的执行过程中“围绕”运行。它有机会在方法执行之前和之后进行工作，并确定何时，如何或者根本不执行该方法。如果需要以线程安全的方式（例如，启动和停止计时器）在方法执行之前和之后共享状态，则通常使用环绕通知。始终使用最贴合要求的通知形式来满足你（也就是说，可以使用Before Advice时，请勿使用环绕通知）。
 
-通过使用@Around批注来声明环绕建议。咨询方法的第一个参数必须是ProceedingJoinPoint类型。在建议的正文中，在ProceedingJoinPoint上调用proceed()会使基础方法执行。前进方法也可以传入Object[]。数组中的值用作方法执行时的参数。
+通过使用@Around注解来声明环绕通知。咨询方法的第一个参数必须是ProceedingJoinPoint类型。在通知的正文中，在ProceedingJoinPoint上调用proceed()会使基础方法执行。前进方法也可以传入Object[]。数组中的值用作方法执行时的参数。
 
 > 当用Object []进行调用proceed时，proceed的行为与AspectJ编译器所编译的环绕通知的行为略有不同。对于使用传统AspectJ语言编写的环绕通知，传递给procced的参数数量必须与传递给环绕通知的参数数量（而不是基础连接点采用的参数数量）相匹配，并且传递给给定的参数位置会取代该值绑定到的实体的连接点处的原始值。
-> Spring采取的方法更简单，并且更适合其基于代理的，仅执行的语义。如果你编译为Spring编写的@AspectJ切面，并在AspectJ编译器和weaver中使用参数进行处理，则只需要意识到这种区别。有一种方法可以在Spring
-> AOP和AspectJ之间100％兼容，并且在[下面有关建议参数的部分](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-ataspectj-advice-params)中对此进行了讨论。
+> Spring采取的方法更简单，并且更适合其基于代理的，仅执行的语义。如果你编译为Spring编写的@AspectJ切面，并在AspectJ编译器和weaver中使用参数进行处理，则只需要意识到这种区别。有一种方法可以在Spring AOP和AspectJ之间100％兼容，并且在[下面有关建议参数的部分](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-ataspectj-advice-params)中对此进行了讨论。
 
-以下示例显示了如何使用环绕建议：
+以下示例显示了如何使用环绕通知:
 
 ```java
 import org.aspectj.lang.annotation.Aspect;
@@ -626,27 +624,27 @@ public class AroundExample {
 }
 ```
 
-环绕建议返回的值是该方法的调用者看到的返回值。例如，如果一个简单的缓存切面有一个值，则它可以从缓存中返回一个值，如果没有，则调用proceed()。请注意，在环绕建议的正文中，procced可能被调用一次，多次或完全不被调用。所有这些都是合法的。
+环绕建议返回的值是该方法的调用者看到的返回值。例如，如果一个简单的缓存切面有一个值，则它可以从缓存中返回一个值，如果没有，则调用proceed()。请注意，在环绕通知的正文中，procced可能被调用一次，多次或完全不被调用。所有这些都是合法的。
 
 #### Advice Parameters
 
-Spring提供了完全类型化的建议，这意味着你可以在建议签名中声明所需的参数（如我们先前在返回和抛出示例中所看到的），而不是一直使用Object[]数组。我们将在本节的后面部分介绍如何使参数和其他上下文值可用于建议主体。首先，我们看一下如何编写通用建议，以了解该建议当前建议的方法。
+Spring提供了完全类型化的通知，这意味着你可以在建议签名中声明所需的参数（如我们先前在返回和抛出示例中所看到的），而不是一直使用Object[]数组。我们将在本节的后面部分介绍如何使参数和其他上下文值可用于建议主体。首先，我们看一下如何编写通用建议，以了解该建议当前建议的方法。
 
 ##### 访问当前的JoinPoint
 
-任何建议方法都可以将*org.aspectj.lang.JoinPoint*类型的参数声明为它的第一个参数（请注意，需要环绕建议以声明ProceedingJoinPoint类型的第一个参数，该类型是JoinPoint的子类。JoinPoint接口提供了一个几种有用的方法：
+任何通知方法都可以将*org.aspectj.lang.JoinPoint*类型的参数声明为它的第一个参数（请注意，需要环绕通知以声明ProceedingJoinPoint类型的第一个参数，该类型是JoinPoint的子类。JoinPoint接口提供了一个几种有用的方法:
 
-- getArgs()：返回方法参数。
-- getThis()：返回代理对象。
-- getTarget()：返回目标对象。
-- getSignature()：返回建议方法的描述。
-- toString()：打印有关建议方法的有用描述。
+- getArgs():返回方法参数。
+- getThis():返回代理对象。
+- getTarget():返回目标对象。
+- getSignature():返回建议方法的描述。
+- toString():打印有关建议方法的有用描述。
 
 有关更多详细信息，请参见 [javadoc](https://www.eclipse.org/aspectj/doc/released/runtime-api/org/aspectj/lang/JoinPoint.html)。
 
-##### 将参数传递给建议
+##### 将参数传递给通知
 
-我们已经看到了如何绑定返回的值或异常值（在返回建议和抛出异常建议之后使用）。要使参数值可用于建议正文，可以使用args的绑定形式。如果在args表达式中使用参数名称代替类型名称，则在调用建议时会将相应参数的值作为参数值传递。一个例子应该使这一点更清楚。假设你要建议以Account对象作为第一个参数的DAO操作的执行，并且你需要在建议正文中访问该帐户。可以编写以下内容：
+我们已经看到了如何绑定返回的值或异常值（在返回建议和抛出异常建议之后使用）。要使参数值可用于通知正文，可以使用args的绑定形式。如果在args表达式中使用参数名称代替类型名称，则在调用通知时会将相应参数的值作为参数值传递。一个例子应该使这一点更清楚。假设你要通知以Account对象作为第一个参数的DAO操作的执行，并且你需要在通知正文中访问该帐户。可以编写以下内容:
 
 ```java
 @Before("com.xyz.myapp.SystemArchitecture.dataAccessOperation() && args(account,..)")
@@ -655,11 +653,11 @@ public void validateAccount(Account account) {
 }
 ```
 
-切入点表达式的args（account，..）部分有两个用途。首先，它将匹配限制为方法采用至少一个参数且传递给该参数的参数为Account实例的那些方法执行。其次，它通过account参数使建议的实际Account对象可用。
+切入点表达式的args（account，..）部分有两个用途。首先，它将匹配限制为方法采用至少一个参数且传递给该参数的参数为Account实例的那些方法执行。其次，它通过account参数使通知的实际Account对象可用。
 
 有关更多详细信息，请参见AspectJ编程指南。
 
-代理对象（this），目标对象（target）和注解（@ within，@ target，@ annotation和@args）都可以以类似的方式绑定。接下来的两个示例显示如何匹配使用@Auditable注解的方法的执行并提取审计代码：
+代理对象（this），目标对象（target）和注解（@within，@target，@annotation和@args）都可以以类似的方式绑定。接下来的两个示例显示如何匹配使用@Auditable注解的方法的执行并提取审计代码:
 
 ```java
 @Retention(RetentionPolicy.RUNTIME)
@@ -669,7 +667,7 @@ public @interface Auditable {
 }
 ```
 
-这两个示例中的第二个示例显示了与@Auditable方法的执行相匹配的建议：
+这两个示例中的第二个示例显示了与@Auditable方法的执行相匹配的建议:
 
 ```java
 @Before("com.xyz.lib.Pointcuts.anyPublicMethod() && @annotation(auditable)")
@@ -679,9 +677,9 @@ public void audit(Auditable auditable) {
 }
 ```
 
-##### 建议参数和泛型
+##### 通知参数和泛型
 
-Spring AOP可以处理类声明和方法参数中使用的泛型。假设具有如下通用类型：
+Spring AOP可以处理类声明和方法参数中使用的泛型。假设具有如下通用类型:
 
 ```java
 public interface Sample<T> {
@@ -690,7 +688,7 @@ public interface Sample<T> {
 }
 ```
 
-你可以通过在要拦截方法的参数类型中键入advice参数，将方法类型的拦截限制为某些参数类型：
+你可以通过在要拦截方法的参数类型中键入通知参数，将方法类型的拦截限制为某些参数类型:
 
 ```java
 @Before("execution(* ..Sample+.sampleGenericMethod(*)) && args(param)")
@@ -699,7 +697,7 @@ public void beforeSampleMethod(MyType param) {
 }
 ```
 
-这种方法不适用于通用集合。因此，不能按以下方式定义切入点：
+这种方法不适用于通用集合。因此，不能按以下方式定义切入点:
 
 ```java
 @Before("execution(* ..Sample+.sampleGenericCollectionMethod(*)) && args(param)")
@@ -713,9 +711,9 @@ public void beforeSampleMethod(Collection<MyType> param) {
 
 ##### 确定参数名称
 
-通知调用中的参数绑定依赖于切入点表达式中使用的名称与切入点方法签名中声明的参数名称的匹配。通过Java反射无法获得参数名称，因此Spring AOP使用以下策略来确定参数名称：
+通知调用中的参数绑定依赖于切入点表达式中使用的名称与切入点方法签名中声明的参数名称的匹配。通过Java反射无法获得参数名称，因此Spring AOP使用以下策略来确定参数名称:
 
-- 如果用户已明确指定参数名称，则使用指定的参数名称。建议和切入点注解均具有可选的argNames属性，你可以使用该属性来指定带注解的方法的参数名称。这些参数名称在运行时可用。以下示例显示如何使用argNames属性：
+- 如果用户已明确指定参数名称，则使用指定的参数名称。通知和切入点注解均具有可选的argNames属性，你可以使用该属性来指定带注解的方法的参数名称。这些参数名称在运行时可用。以下示例显示如何使用argNames属性:
 
   ```java
   @Before(value="com.xyz.lib.Pointcuts.anyPublicMethod() && target(bean) && @annotation(auditable)",
@@ -727,7 +725,7 @@ public void beforeSampleMethod(Collection<MyType> param) {
   
   ```
 
-  对JoinPoint，ProceedingJoinPoint和JoinPoint.StaticPart类型的第一个参数给予的特殊处理对于不收集任何其他联接点上下文的建议实例特别方便。在这种情况下，你可以省略argNames属性。例如，以下建议无需声明argNames属性：
+  对JoinPoint，ProceedingJoinPoint和JoinPoint.StaticPart类型的第一个参数给予的特殊处理对于不收集任何其他联接点上下文的建议实例特别方便。在这种情况下，你可以省略argNames属性。例如，以下建议无需声明argNames属性:
 
   ```java
   @Before("com.xyz.lib.Pointcuts.anyPublicMethod()")
@@ -736,7 +734,7 @@ public void beforeSampleMethod(Collection<MyType> param) {
   }
   ```
 
-  使用'argNames'属性有点笨拙，因此，如果未指定'argNames'属性，Spring AOP将查看该类的调试信息，并尝试从局部变量表中确定参数名称。只要已使用调试信息（至少是“-g：vars”）编译了类，此信息就会存在。启用此标志时进行编译的结果是：（1）你的代码更易于理解（逆向工程），（2）类文件的大小略大（通常无关紧要），（3）删除未使用的本地代码的优化变量不适用于你的编译器。换句话说，通过启用该标志，你应该不会遇到任何困难。
+  使用'argNames'属性有点笨拙，因此，如果未指定'argNames'属性，Spring AOP将查看该类的调试信息，并尝试从局部变量表中确定参数名称。只要已使用调试信息（至少是“-g:vars”）编译了类，此信息就会存在。启用此标志时进行编译的结果是:（1）你的代码更易于理解（逆向工程），（2）类文件的大小略大（通常无关紧要），（3）删除未使用的本地代码的优化变量不适用于你的编译器。换句话说，通过启用该标志，你应该不会遇到任何困难。
 
   > 如果即使没有调试信息，但是使用了AspectJ(ajc)编译文件，则无需添加argNames属性，因为编译器会保留所需的信息。
 
@@ -746,7 +744,7 @@ public void beforeSampleMethod(Collection<MyType> param) {
 
 ##### Proceeding with Arguments
 
-前面我们提到过，我们将描述如何编写一个在Spring AOP和AspectJ中始终有效的参数的proceed调用。解决方案是确保建议签名按顺序绑定每个方法参数。以下示例显示了如何执行此操作：
+前面我们提到过，我们将描述如何编写一个在Spring AOP和AspectJ中始终有效的参数的proceed调用。解决方案是确保通知签名按顺序绑定每个方法参数。以下示例显示了如何执行此操作:
 
 ```java
 @Around("execution(List<Account> find*(..)) && " +
@@ -764,17 +762,17 @@ public Object preProcessQueryPattern(ProceedingJoinPoint pjp,
 
 #### Advice Ordering
 
-当多条建议都希望在同一连接点上运行时会发生什么？ Spring AOP遵循与AspectJ相同的优先级规则来确定建议执行的顺序。优先级最高的建议首先“在途中”运行（因此，给定两条优先(before)建议，则优先级最高的建议首先运行）。从连接点“出路”时，优先级最高的建议将最后运行（因此，给定两条后置通知，优先级最高的建议将之后运行）。
+当多条通知都希望在同一连接点上运行时会发生什么？ Spring AOP遵循与AspectJ相同的优先级规则来确定建议执行的顺序。优先级最高的建议首先“在途中”运行（因此，给定两条优先(before)建议，则优先级最高的首先运行）。从连接点“出路”时，优先级最高的通知将最后运行（因此，给定两条后置通知，优先级最高的通知将之后运行）。
 
-当在不同切面定义的两条建议都需要在同一连接点上运行时，除非另行指定，否则执行顺序是不确定的。你可以通过指定优先级来控制执行顺序。通过在方面类中实现*org.springframework.core.Ordered*接口或使用Order注解对其进行注解，可以通过常规的Spring方法来完成。给定两个切面，从Ordered.getValue（）（或注解值）返回较低值的切面具有较高的优先级。
+当在不同切面定义的两条通知都需要在同一连接点上运行时，除非另行指定，否则执行顺序是不确定的。你可以通过指定优先级来控制执行顺序。通过在方面类中实现*org.springframework.core.Ordered*接口或使用Order注解对其进行注解，可以通过常规的Spring方法来完成。给定两个切面，从Ordered.getValue（）（或注解值）返回较低值的切面具有较高的优先级。
 
-当在相同切面定义的两条建议都需要在同一连接点上运行时，其顺序是未定义的（因为无法通过反射为javac编译的类检索声明顺序）。考虑将这些建议方法折叠为每个方面类中每个连接点的一个建议方法，或将建议重构为单独的方面类。
+当在相同切面定义的两条建议都需要在同一连接点上运行时，其顺序是未定义的（因为无法通过反射为javac编译的类检索声明顺序）。考虑将这些投资方法折叠为每个方面类中每个连接点的一个通知方法，或将建议重构为单独的方面类。
 
 ### Introductions
 
-Introductions（在AspectJ中称为类型间声明）使切面可以声明建议对象实现给定的接口，并代表那些对象提供该接口的实现。
+Introductions（在AspectJ中称为类型间声明）使切面可以声明通知对象实现给定的接口，并代表那些对象提供该接口的实现。
 
-你可以使用@DeclareParents注解进行介绍。此注解用于声明匹配类型具有新的父代（名称由来）。例如，给定一个名为UsageTracked的接口和该接口名为DefaultUsageTracked的实现，以下切面声明服务接口的所有实现者也都实现了UsageTracked接口（例如，通过JMX公开统计信息）：
+你可以使用@DeclareParents注解进行介绍。此注解用于声明匹配类型具有新的父代（名称由来）。例如，给定一个名为UsageTracked的接口和该接口名为DefaultUsageTracked的实现，以下切面声明服务接口的所有实现者也都实现了UsageTracked接口（例如，通过JMX公开统计信息）:
 
 ```java
 @Aspect
@@ -791,7 +789,7 @@ public class UsageTracking {
 }
 ```
 
-要实现的接口由带注解的字段的类型确定。 @DeclareParents注解的value属性是AspectJ类型的模式。匹配类型的任何bean都实现UsageTracked接口。请注意，在前面示例的前置通知中，服务Bean可以直接用作UsageTracked接口的实现。如果以编程方式访问bean，则应编写以下内容：
+要实现的接口由带注解的字段的类型确定。 @DeclareParents注解的value属性是AspectJ类型的模式。匹配类型的任何bean都实现UsageTracked接口。请注意，在前面示例的前置通知中，服务Bean可以直接用作UsageTracked接口的实现。如果以编程方式访问bean，则应编写以下内容:
 
 ```java
 UsageTracked usageTracked = (UsageTracked) context.getBean("myService");
@@ -804,7 +802,7 @@ UsageTracked usageTracked = (UsageTracked) context.getBean("myService");
 默认情况下，应用程序上下文中每个切面都有一个实例。 AspectJ将此称为单例实例化模型。可以使用备用生命周期来定义切面。 
 Spring支持AspectJ的perthis和pertarget实例化模型（当前不支持percflow，percflowbelow和pertypewithin）。
 
-你可以通过在@Aspect注解中指定perthis子句来声明perthis切面。考虑以下示例：
+你可以通过在@Aspect注解中指定perthis子句来声明perthis切面。考虑以下示例:
 
 ```java
 @Aspect("perthis(com.xyz.myapp.SystemArchitecture.businessService())")
@@ -830,7 +828,7 @@ pertarget实例化模型的工作方式与perthis完全相同，但是它在匹�
 
 有时由于并发问题（例如，死锁），业务服务的执行可能会失败。如果重试该操作，则很可能在下一次尝试中成功。对于适合在这种情况下重试的业务（不需要为解决冲突而需要返回给用户的幂等操作），我们希望透明地重试该操作，以避免客户端看到PessimisticLockingFailureException。这项要求明确地跨越了服务层中的多个服务，因此非常适合通过一个切面实施。
 
-因为我们想重试该操作，所以我们需要使用环绕通知，以便可以多次调用proced。以下清单显示了基本方面的实现：
+因为我们想重试该操作，所以我们需要使用环绕通知，以便可以多次调用proceed。以下清单显示了基本方面的实现:
 
 ```java
 @Aspect
@@ -874,7 +872,7 @@ public class ConcurrentOperationExecutor implements Ordered {
 
 请注意，切面实现了Ordered接口，因此我们可以将方面的优先级设置为高于事务通知（每次重试时都希望有新的事务）。 maxRetries和order属性均由Spring配置。建议的主要动作发生在doConcurrentOperation中。请注意，目前，我们将重试逻辑应用于每个businessService（）。我们尝试继续，如果失败并出现PessimisticLockingFailureException，则我们将再次尝试，除非我们用尽了所有重试尝试。
 
-相应的Spring配置如下：
+相应的Spring配置如下:
 
 ```xml
 <aop:aspectj-autoproxy/>
@@ -885,7 +883,7 @@ public class ConcurrentOperationExecutor implements Ordered {
 </bean>
 ```
 
-为了完善切面，使其仅重试幂等运算，我们可以定义以下幂等注解：
+为了完善切面，使其仅重试幂等运算，我们可以定义以下幂等注解:
 
 ```java
 @Retention(RetentionPolicy.RUNTIME)
@@ -894,7 +892,7 @@ public @interface Idempotent {
 }
 ```
 
-然后，我们可以使用注解来注解服务操作的实现。切面更改为仅重试幂等操作涉及更改切入点表达式，以便只有@Idempotent操作匹配，如下所示：
+然后，我们可以使用注解来注解服务操作的实现。切面更改为仅重试幂等操作涉及更改切入点表达式，以便只有@Idempotent操作匹配，如下所示:
 
 ```java
 @Around("com.xyz.myapp.SystemArchitecture.businessService() && " +
@@ -910,15 +908,15 @@ public Object doConcurrentOperation(ProceedingJoinPoint pjp) throws Throwable {
 
 要使用本节中描述的aop名称空间标签，需要导入spring-aop模式，如[XML Schema-based configuration](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#xsd-schemas).所述。有关如何在aop名称空间中导入标签的信息，请参见 [the AOP schema](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#xsd-schemas-aop).
 
-在Spring配置中，所有切面和建议程序元素都必须放在<aop：config>元素内（在应用程序上下文配置中可以有多个<aop：config>元素）。<aop：config>元素可以包含切入点，顾问程序和aspect元素（请注意，必须按此顺序声明它们）。
+在Spring配置中，所有切面和挑战程序元素都必须放在\<aop:config>元素内（在应用程序上下文配置中可以有多个\<aop:config>元素）。\<aop:config>元素可以包含切入点，顾问程序和aspect元素（请注意，必须按此顺序声明它们）。
 
-> <aop：config>的配置样式大量使用了Spring的自动代理机制。如果你已经通过使用BeanNameAutoProxyCreator或类似方法使用显式自动代理，则可能会导致问题（例如，未编制建议）。推荐的用法模式是仅使用<aop：config>样式或仅使用AutoProxyCreator样式，并且不要混合使用。
+> \<aop:config>的配置样式大量使用了Spring的自动代理机制。如果你已经通过使用BeanNameAutoProxyCreator或类似方法使用显式自动代理，则可能会导致问题（例如，未编织通知）。推荐的用法模式是仅使用\<aop:config>样式或仅使用AutoProxyCreator样式，并且不要混合使用。
 
 ### 声明切面
 
-使用模式支持时，切面是在Spring应用程序上下文中定义为Bean的常规Java对象。状态和行为在对象的字段和方法中捕获，切入点和建议信息在XML中捕获。
+使用模式支持时，切面是在Spring应用程序上下文中定义为Bean的常规Java对象。状态和行为在对象的字段和方法中捕获，切入点和通知信息在XML中捕获。
 
-您可以使用<aop：aspect>元素声明一个切面，并使用ref属性引用该bean，如以下示例所示：
+你可以使用\<aop:aspect>元素声明一个切面，并使用ref属性引用该bean，如以下示例所示:
 
 ```xml
 <aop:config>
@@ -936,9 +934,9 @@ public Object doConcurrentOperation(ProceedingJoinPoint pjp) throws Throwable {
 
 ### 声明切入点
 
-您可以在<aop：config>元素内声明一个命名的切入点，让切入点定义在多个切面和通知之间共享。
+你可以在\<aop:config>元素内声明一个命名的切入点，让切入点定义在多个切面和通知之间共享。
 
-可以定义代表服务层中任何业务服务的执行的切入点：
+可以定义代表服务层中任何业务服务的执行的切入点:
 
 ```xml
 <aop:config>
@@ -948,3 +946,4 @@ public Object doConcurrentOperation(ProceedingJoinPoint pjp) throws Throwable {
 
 </aop:config>
 ```
+
