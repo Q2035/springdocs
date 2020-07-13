@@ -947,3 +947,82 @@ public Object doConcurrentOperation(ProceedingJoinPoint pjp) throws Throwable {
 </aop:config>
 ```
 
+请注意，切入点表达式本身使用的[@AspectJ support](https://docs.spring.io/spring-framework/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-ataspectj)中所述的AspectJ切入点表达式语言。如果使用基于XML的声明样式，则可以引用在切入点表达式中的类型（@Aspects）中定义的命名切入点。定义上述切入点的另一种方法如下：
+
+```xml
+<aop:config>
+
+    <aop:pointcut id="businessService"
+        expression="com.xyz.myapp.SystemArchitecture.businessService()"/>
+
+</aop:config>
+```
+
+假定你具有“[Sharing Common Pointcut Definitions](https://docs.spring.io/spring-framework/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-common-pointcuts)”中所述的SystemArchitecture切面。
+
+然后，在切面中声明切入点与声明顶级切入点非常相似，如以下示例所示：
+
+```xml
+<aop:config>
+
+    <aop:aspect id="myAspect" ref="aBean">
+
+        <aop:pointcut id="businessService"
+            expression="execution(* com.xyz.myapp.service.*.*(..))"/>
+
+        ...
+
+    </aop:aspect>
+
+</aop:config>
+```
+
+与@AspectJ切面几乎相同，使用基于架构的定义样式声明的切入点可以收集连接点上下文。例如，以下切入点收集this对象作为连接点上下文，并将其传递给通知：
+
+```xml
+<aop:config>
+
+    <aop:aspect id="myAspect" ref="aBean">
+
+        <aop:pointcut id="businessService"
+            expression="execution(* com.xyz.myapp.service.*.*(..)) && this(service)"/>
+
+        <aop:before pointcut-ref="businessService" method="monitor"/>
+
+        ...
+
+    </aop:aspect>
+
+</aop:config>
+```
+
+必须声明该通知以通过包含匹配名称的参数来接收收集的连接点上下文，如下所示：
+
+```java
+public void monitor(Object service) {
+    // ...
+}
+```
+
+组合切入点子表达式时，&&在XML文档中很尴尬，因此你可以分别使用＆，or或not关键字代替&&，||和！。例如，上一个切入点可以更好地编写：
+
+```xml
+<aop:config>
+
+    <aop:aspect id="myAspect" ref="aBean">
+
+        <aop:pointcut id="businessService"
+            expression="execution(* com.xyz.myapp.service.*.*(..)) and this(service)"/>
+
+        <aop:before pointcut-ref="businessService" method="monitor"/>
+
+        ...
+    </aop:aspect>
+</aop:config>
+```
+
+请注意，以这种方式定义的切入点由其XML ID引用，并且不能用作命名切入点以形成复合切入点。因此，基于架构的定义样式中的命名切入点支持比@AspectJ样式所提供的更受限制。
+
+### 声明通知
+
+基于模式的AOP支持使用与@AspectJ样式相同的五种通知，并且它们具有完全相同的语义。
