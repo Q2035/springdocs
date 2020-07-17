@@ -25,8 +25,9 @@
 
 5.31 慢慢来
 
-## Aspect Oriented Programming with Spring
-**翻译中**
+## [Aspect Oriented Programming with Spring](https://www.hellooooo.top/blog/51 )
+第五部分已经完成，当前,可以在我[博客](https://www.hellooooo.top/blog/51 )查看，也可以在md目录下查看
+7.17 不慌
 
 ## Spring AOP APIs
 **翻译中**
@@ -37,4 +38,4 @@
 ## Data Buffers and Codecs
 **翻译中**
 
-如有问题请及时联系
+如有任何建议或意见，烦请邮箱联系
