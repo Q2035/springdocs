@@ -1458,3 +1458,198 @@ public @interface Idempotent {
         @annotation(com.xyz.myapp.service.Idempotent)"/>
 ```
 
+## 选择要使用的AOP声明样式
+
+一旦确定切面是实现给定需求的最佳方法，你如何在使用Spring AOP或AspectJ以及在Aspect语言（代码）样式，@  AspectJ注解样式或Spring XML样式之间做出选择？这些决定受许多因素影响，包括应用程序需求，开发工具和团队对AOP的熟悉程度。
+
+### Spring AOP还是完整AspectJ？
+
+使用最简单的方法即可。 Spring  AOP比使用完整的AspectJ更简单，因为不需要在开发和构建过程中引入AspectJ编译器/编织器。如果你只需要通知在Spring  bean上执行操作，则Spring  AOP是正确的选择。如果你需要通知不受Spring容器管理的对象（通常是域对象），则需要使用AspectJ。如果你希望通知除简单方法执行之外的连接点（例如，字段get或设置连接点等），则还需要使用AspectJ。
+
+使用AspectJ时，可以选择AspectJ语言语法（也称为“代码样式”）或@AspectJ注解样式。显然，如果你不使用Java  5+，则别无选择：使用代码样式。如果切面在你的设计中起着重要作用，并且你能够将AspectJ开发工具（AJDT）插件用于Eclipse，则AspectJ语言语法是首选。它更干净，更简单，因为该语言是专为编写切面而设计的。如果你不使用Eclipse或只有少数几个切面在你的应用程序并且不起主要作用，那么你可能需要考虑使用@AspectJ样式，在IDE中坚持常规Java编译，并向其中添加切面编织阶段你的构建脚本。
+
+### @AspectJ或Spring AOP的XML？
+
+如果选择使用Spring AOP，则可以选择@AspectJ或XML样式。有各种折衷考虑。
+
+XML样式可能是现有Spring用户最熟悉的，并且得到了真正的POJO的支持。当使用AOP作为配置企业服务的工具时，XML是一个不错的选择（一个很好的测试是你是否将切入点表达式视为配置的一部分，而你可能希望独立更改）。使用XML样式，可以说从你的配置中可以更清楚地了解系统中存在哪些切面。
+
+XML样式有两个缺点。首先，它没有完全将要解决的需求的实现封装在一个地方。  DRY原则说，系统中的任何知识都应该有单一，明确，权威的表示。在使用XML样式时，关于如何实现需求的部分会在配置文件中的后备bean类的声明和XML中分散。当你使用@AspectJ样式时，此信息将封装在一个模块中：切面。其次，与@AspectJ样式相比，XML样式在表达能力上有更多限制：仅支持“单例”方面实例化模型，并且无法组合以XML声明的命名切入点。例如，使用@AspectJ样式，你可以编写如下内容：
+
+```java
+@Pointcut("execution(* get*())")
+public void propertyAccess() {}
+
+@Pointcut("execution(org.xyz.Account+ *(..))")
+public void operationReturningAnAccount() {}
+
+@Pointcut("propertyAccess() && operationReturningAnAccount()")
+public void accountPropertyAccess() {}
+```
+
+在XML样式中，你可以声明前两个切入点：
+
+```xml
+<aop:pointcut id="propertyAccess"
+        expression="execution(* get*())"/>
+
+<aop:pointcut id="operationReturningAnAccount"
+        expression="execution(org.xyz.Account+ *(..))"/>
+```
+
+XML方法的缺点是你无法通过组合这些定义来定义accountPropertyAccess切入点。
+
+@AspectJ样式支持其他实例化模型和更丰富的切入点组合。它具有将切面保持为模块化单元的优势。它还可以被Spring  AOP和AspectJ同时理解。因此，如果你以后决定需要AspectJ的功能来实现其他要求，则可以轻松地迁移到经典的AspectJ设置。总而言之，Spring团队在自定义方面更喜欢@AspectJ样式，而不是简单地配置企业服务。
+
+## 混合切面类型
+
+通过使用自动代理支持，模式定义的<aop：aspect>切面，<aop：advisor>声明的advisor程序，甚至是同一配置中其他样式的代理和拦截器，完全可以混合@AspectJ样式的切面。所有这些都是通过使用相同的基础支持机制实现的，并且可以毫无困难地共存。
+
+## 代理机制
+
+Spring AOP使用JDK动态代理或CGLIB创建给定目标对象的代理。 JDK内置了JDK动态代理，而CGLIB是常见的开源类定义库（重新包装到spring-core中）。
+
+如果要代理的目标对象实现至少一个接口，则使用JDK动态代理。代理了由目标类型实现的所有接口。如果目标对象未实现任何接口，则将创建CGLIB代理。
+
+如果要强制使用CGLIB代理（例如，代理为目标对象定义的每个方法，而不仅是由其接口实现的方法），都可以这样做。但是，你应该考虑以下问题：
+
+- 使用CGLIB，不能代理final方法，因为它们不能在运行时生成的子类中被覆盖。
+- 从Spring 4.0开始，由于CGLIB代理实例是通过Objenesis创建的，因此不会调用代理对象的构造函数两次。仅当你的JVM不允许绕过构造函数时，你才可能从Spring的AOP支持中看到两次调用和相应的调试日志条目。
+
+要强制使用CGLIB代理，请将<aop：config>元素的proxy-target-class属性的值设置为true，如下所示：
+
+```xml
+<aop:config proxy-target-class="true">
+    <!-- other beans defined here... -->
+</aop:config>
+```
+
+要在使用@AspectJ自动代理支持时强制CGLIB代理，请将<aop：aspectj-autoproxy>元素的proxy-target-class属性设置为true，如下所示：
+
+```xml
+<aop:aspectj-autoproxy proxy-target-class="true"/>
+```
+
+> 多个<aop：config />部分在运行时折叠到一个统一的自动代理创建器中，该创建器将应用任何<aop：config  />部分（通常来自不同的XML bean定义文件）指定的最强的代理设置。这也适用于<tx：annotation-driven  />和<aop：aspectj-autoproxy />元素。  为了清楚起见，在<tx：annotation-driven  />，<aop：aspectj-autoproxy />或<aop：config  />元素上使用proxy-target-class =“ true”会强制对所有三个元素使用CGLIB代理其中。
+
+### 理解AOP代理
+
+Spring AOP是基于代理的。在编写自己的切面或使用Spring框架提供的任何基于Spring AOP的切面之前，掌握最后一条语句实际含义的语义至关重要。
+
+首先考虑以下情况：你有一个普通的，未经代理的，没有特殊要求的，直接的对象引用，如以下代码片段所示：
+
+```java
+public class SimplePojo implements Pojo {
+
+    public void foo() {
+        // this next method invocation is a direct call on the 'this' reference
+        this.bar();
+    }
+
+    public void bar() {
+        // some logic...
+    }
+}
+```
+
+如果在对象引用上调用方法，则直接在该对象引用上调用该方法，如下图和清单所示：
+
+![](./image/aop-proxy-plain-pojo-call.png)
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+        Pojo pojo = new SimplePojo();
+        // this is a direct method call on the 'pojo' reference
+        pojo.foo();
+    }
+}
+```
+
+当客户端代码具有的引用是代理时，情况会稍有变化。考虑以下图表和代码片段：
+
+![](./image/aop-proxy-call.png)
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+        ProxyFactory factory = new ProxyFactory(new SimplePojo());
+        factory.addInterface(Pojo.class);
+        factory.addAdvice(new RetryAdvice());
+
+        Pojo pojo = (Pojo) factory.getProxy();
+        // this is a method call on the proxy!
+        pojo.foo();
+    }
+}
+```
+
+此处要理解的关键是Main类的main（..）方法中的客户端代码具有对代理的引用。这意味着该对象引用上的方法调用是代理上的调用。结果，代理可以委派给与该特定方法调用相关的所有拦截器（通知）。但是，一旦调用最终到达目标对象（在本例中为SimplePojo，则为引用），它可能对其自身进行的任何方法调用（例如this.bar（）或this.foo（））都会被调用。但不是通过代理。这具有重要的意义。这意味着自调用不会导致与方法调用相关的通知得到执行的机会。
+
+好吧，那该怎么办？最佳方法（在这里宽松地使用术语“最佳”）是重构代码，以免发生自调用。这确实需要你做一些工作，但这是最好的，侵入性最小的方法。下一种方法绝对可怕，我们正要指出这一点，恰恰是因为它是如此可怕。你可以（对我们来说是痛苦的）完全将类中的逻辑绑定到Spring AOP，如以下示例所示：
+
+```java
+public class SimplePojo implements Pojo {
+
+    public void foo() {
+        // this works, but... gah!
+        ((Pojo) AopContext.currentProxy()).bar();
+    }
+
+    public void bar() {
+        // some logic...
+    }
+}
+```
+
+这将你的代码完全耦合到Spring AOP，并且使类本身意识到在AOP上下文中使用它的事实。创建代理时，它还需要一些其他配置，如以下示例所示：
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+        ProxyFactory factory = new ProxyFactory(new SimplePojo());
+        factory.addInterface(Pojo.class);
+        factory.addAdvice(new RetryAdvice());
+        factory.setExposeProxy(true);
+
+        Pojo pojo = (Pojo) factory.getProxy();
+        // this is a method call on the proxy!
+        pojo.foo();
+    }
+}
+```
+
+最后，必须指出，AspectJ没有此自调用问题，因为它不是基于代理的AOP框架。
+
+## 以编程方式创建@AspectJ代理
+
+除了使用<aop：config>或<aop：aspectj-autoproxy>声明配置中的各个方面外，还可以通过编程方式创建通知目标对象的代理。有关Spring的AOP API的完整详细信息，请参阅[next chapter](https://docs.spring.io/spring-framework/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-api)。在这里，我们要重点介绍通过使用@AspectJ切面自动创建代理的功能。
+
+你可以使用*org.springframework.aop.aspectj.annotation.AspectJProxyFactory*类为一个或多个@AspectJ切面通知的目标对象创建代理。此类的基本用法非常简单，如以下示例所示：
+
+```java
+// create a factory that can generate a proxy for the given target object
+AspectJProxyFactory factory = new AspectJProxyFactory(targetObject);
+
+// add an aspect, the class must be an @AspectJ aspect
+// you can call this as many times as you need with different aspects
+factory.addAspect(SecurityManager.class);
+
+// you can also add existing aspect instances, the type of the object supplied must be an @AspectJ aspect
+factory.addAspect(usageTracker);
+
+// now get the proxy object...
+MyInterfaceType proxy = factory.getProxy();
+```
+
+有关更多信息，请参见[javadoc](https://docs.spring.io/spring-framework/docs/5.2.6.RELEASE/javadoc-api/org/springframework/aop/aspectj/annotation/AspectJProxyFactory.html)。
+
+## 在Spring应用中使用AspectJ
+
+到目前为止，本章介绍的所有内容都是纯Spring AOP。在本节中，我们将研究如果你的需求超出了Spring AOP本身提供的功能，那么如何使用AspectJ编译器或weaver代替Spring AOP或除Spring AOP之外使用。
+
+Spring附带了一个小的AspectJ方面库，该库在你的发行版中可以作为spring-aspects.jar独立使用。你需要将其添加到类路径中才能使用其中的切面。[Using AspectJ to Dependency Inject Domain Objects with Spring](https://docs.spring.io/spring-framework/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-atconfigurable)以及 [Other Spring aspects for AspectJ](https://docs.spring.io/spring-framework/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-ajlib-other)讨论了该库的内容以及如何使用它。[Configuring AspectJ Aspects by Using Spring IoC](https://docs.spring.io/spring-framework/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-aj-configure) 讨论了如何依赖注入使用AspectJ编译器编织的AspectJ切面。最后，[Load-time Weaving with AspectJ in the Spring Framework](https://docs.spring.io/spring-framework/docs/5.2.6.RELEASE/spring-framework-reference/core.html#aop-aj-ltw)提供了加载时编织的介绍。
+
