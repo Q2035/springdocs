@@ -24,9 +24,9 @@ public interface Pointcut {
 }
 ```
 
-将Pointcut接口分为两部分，可以重用类和方法匹配的部分以及细粒度的合成操作（例如与另一个方法匹配器执行“联合”）。
+将Pointcut接口分为两部分，可以重用类和方法匹配的部分以及细粒度的合成操作(例如与另一个方法匹配器执行“联合”)。
 
-ClassFilter接口用于将切入点限制为给定的一组目标类。如果matches（）方法始终返回true，则将匹配所有目标类。以下清单显示了ClassFilter接口定义：
+ClassFilter接口用于将切入点限制为给定的一组目标类。如果matches()方法始终返回true，则将匹配所有目标类。以下清单显示了ClassFilter接口定义：
 
 ```java
 public interface ClassFilter {
@@ -48,15 +48,15 @@ public interface MethodMatcher {
 }
 ```
 
-matchs（Method，Class）方法用于测试此切入点是否与目标类上的给定方法匹配。创建AOP代理时可以执行此评估，以避免需要对每个方法调用进行测试。如果两个参数的match方法对于给定的方法返回true，并且MethodMatcher的isRuntime（）方法返回true，则在每次方法调用时都将调用三个参数的match方法。这样，切入点就可以在执行目标通知之前立即查看传递给方法调用的参数。
+matchs(Method，Class)方法用于测试此切入点是否与目标类上的给定方法匹配。创建AOP代理时可以执行此评估，以避免需要对每个方法调用进行测试。如果两个参数的match方法对于给定的方法返回true，并且MethodMatcher的isRuntime()方法返回true，则在每次方法调用时都将调用三个参数的match方法。这样，切入点就可以在执行目标通知之前立即查看传递给方法调用的参数。
 
-大多数MethodMatcher实现都是静态的，这意味着它们的isRuntime（）方法返回false。在这种情况下，永远不会调用三参数match方法。
+大多数MethodMatcher实现都是静态的，这意味着它们的isRuntime()方法返回false。在这种情况下，永远不会调用三参数match方法。
 
 > 如果可能，请尝试使切入点成为静态，从而允许AOP框架在创建AOP代理时缓存切入点评估的结果。
 
 ### 切入点的操作
 
-Spring支持切入点上的操作（特别是联合和相交）。
+Spring支持切入点上的操作(特别是联合和相交)。
 
 联合表示两个切入点之一匹配的方法。交集是指两个切入点都匹配的方法。联合通常更有用。你可以通过使用*org.springframework.aop.support.Pointcuts*类中的静态方法或在同一包中使用ComposablePointcut类来编写切入点。但是，使用AspectJ切入点表达式通常是一种更简单的方法。
 
@@ -80,7 +80,7 @@ Spring提供了几种方便的切入点实现。你可以直接使用其中一�
 
 指定静态切入点的一种明显方法是正则表达式。除了Spring之外，还有几个AOP框架使之成为可能。*org.springframework.aop.support.JdkRegexpMethodPointcut*是一个通用的正则表达式切入点，它使用JDK中的正则表达式支持。
 
-使用JdkRegexpMethodPointcut类，可以提供模式字符串的列表。如果其中任何一个匹配，则切入点的评估结果为true。（因此，结果实际上是这些切入点的并集）
+使用JdkRegexpMethodPointcut类，可以提供模式字符串的列表。如果其中任何一个匹配，则切入点的评估结果为true。(因此，结果实际上是这些切入点的并集)
 
 以下示例显示如何使用JdkRegexpMethodPointcut：
 
@@ -96,7 +96,7 @@ Spring提供了几种方便的切入点实现。你可以直接使用其中一�
 </bean>
 ```
 
-Spring提供了一个名为RegexpMethodPointcutAdvisor的便捷类，该类使我们还可以引用一个Advice（请记住，Advice可以是拦截器，前置通知，异常通知等）。在幕后，Spring使用了JdkRegexpMethodPointcut。使用RegexpMethodPointcutAdvisor可以简化织入，因为一个bean封装了切入点和通知，如以下示例所示：
+Spring提供了一个名为RegexpMethodPointcutAdvisor的便捷类，该类使我们还可以引用一个Advice(请记住，Advice可以是拦截器，前置通知，异常通知等)。在幕后，Spring使用了JdkRegexpMethodPointcut。使用RegexpMethodPointcutAdvisor可以简化织入，因为一个bean封装了切入点和通知，如以下示例所示：
 
 ```xml
 <bean id="settersAndAbsquatulateAdvisor"
@@ -117,7 +117,7 @@ Spring提供了一个名为RegexpMethodPointcutAdvisor的便捷类，该类使�
 
 **属性驱动的切入点**
 
-静态切入点的一种重要类型是元数据驱动的切入点。这使用元数据属性的值（通常是源码级别的元数据）。
+静态切入点的一种重要类型是元数据驱动的切入点。这使用元数据属性的值(通常是源码级别的元数据)。
 
 **动态切入点**
 
@@ -127,7 +127,7 @@ Spring提供了一个名为RegexpMethodPointcutAdvisor的便捷类，该类使�
 
 **Control Flow Pointcut**
 
-弹簧控制流切入点在概念上类似于AspectJ cflow切入点，尽管功能不那么强大。  （当前无法指定一个切入点在与另一个切入点匹配的连接点下执行）控制流切入点与当前调用堆栈匹配。例如，如果连接点是由*com.mycompany.web*包中的方法或SomeCaller类调用的，则可能会触发。通过使用*org.springframework.aop.support.ControlFlowPointcut*类指定控制流切入点。
+弹簧控制流切入点在概念上类似于AspectJ cflow切入点，尽管功能不那么强大。  (当前无法指定一个切入点在与另一个切入点匹配的连接点下执行)控制流切入点与当前调用堆栈匹配。例如，如果连接点是由*com.mycompany.web*包中的方法或SomeCaller类调用的，则可能会触发。通过使用*org.springframework.aop.support.ControlFlowPointcut*类指定控制流切入点。
 
 > 与其他动态切入点相比，控制流切入点在运行时进行评估要昂贵得多。在Java 1.4中，成本大约是其他动态切入点的五倍。
 
@@ -135,7 +135,7 @@ Spring提供了一个名为RegexpMethodPointcutAdvisor的便捷类，该类使�
 
 Spring提供了有用的切入点超类，以帮助你实现自己的切入点。
 
-因为静态切入点最有用，所以你可能应该子类化StaticMethodMatcherPointcut。这仅需要实现一个抽象方法（尽管你可以覆盖其他方法以自定义行为）。下面的示例演示如何对StaticMethodMatcherPointcut进行子类化：
+因为静态切入点最有用，所以你可能应该子类化StaticMethodMatcherPointcut。这仅需要实现一个抽象方法(尽管你可以覆盖其他方法以自定义行为)。下面的示例演示如何对StaticMethodMatcherPointcut进行子类化：
 
 ```java
 class TestStaticPointcut extends StaticMethodMatcherPointcut {
@@ -150,7 +150,7 @@ class TestStaticPointcut extends StaticMethodMatcherPointcut {
 
 ### 自定义切入点
 
-由于Spring AOP中的切入点是Java类，而不是语言功能（如AspectJ），因此可以声明自定义切入点，无论是静态还是动态。 Spring中的自定义切入点可以任意复杂。但是，如果可以的话，我们建议使用AspectJ切入点表达语言。
+由于Spring AOP中的切入点是Java类，而不是语言功能(如AspectJ)，因此可以声明自定义切入点，无论是静态还是动态。 Spring中的自定义切入点可以任意复杂。但是，如果可以的话，我们建议使用AspectJ切入点表达语言。
 
 > Spring的后续版本可能会提供JAC提供的“语义切入点”的支持-例如，“all methods that change instance variables in the target object”。
 
@@ -185,7 +185,7 @@ public interface MethodInterceptor extends Interceptor {
 }
 ```
 
-invoke（）方法的MethodInvocation参数公开了正在调用的方法，目标连接点，AOP代理以及该方法的参数。 invoke（）方法应返回调用的结果：连接点的返回值。
+invoke()方法的MethodInvocation参数公开了正在调用的方法，目标连接点，AOP代理以及该方法的参数。 invoke()方法应返回调用的结果：连接点的返回值。
 
 以下示例显示了一个简单的MethodInterceptor实现：
 
@@ -200,4 +200,12 @@ public class DebugInterceptor implements MethodInterceptor {
     }
 }
 ```
+
+请注意对MethodInvocation的proceed()方法的调用。这沿着拦截器链向下到达连接点。大多数拦截器都调用此方法并返回其返回值。但是，MethodInterceptor像任何环绕通知一样，可以返回不同的值或引发异常，而不是调用proceed方法。但是，你不希望在没有充分理由的情况下执行此操作。
+
+> MethodInterceptor实现可与其他符合AOP  Alliance的AOP实现互操作性。本节其余部分讨论的其他通知类型将实现常见的AOP概念，但以特定于Spring的方式。尽管使用最特定的通知类型有一个优势，但是如果你可能想在另一个AOP框架中运行方面，则在通知周围使用MethodInterceptor。请注意，切入点当前无法在框架之间互操作，并且AOP Alliance当前未定义切入点接口。
+
+#### 前置通知
+
+一种更简单的通知类型是前置通知。这不需要MethodInvocation对象，因为它仅在进入方法之前被调用。
 
