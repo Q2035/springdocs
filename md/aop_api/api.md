@@ -209,3 +209,84 @@ public class DebugInterceptor implements MethodInterceptor {
 
 一种更简单的通知类型是前置通知。这不需要MethodInvocation对象，因为它仅在进入方法之前被调用。
 
+前置通知的主要优点在于，无需调用proce()方法，因此，不会因疏忽而未能沿拦截器链继续行进。
+
+以下清单显示了MethodBeforeAdvice接口：
+
+```java
+public interface MethodBeforeAdvice extends BeforeAdvice {
+
+    void before(Method m, Object[] args, Object target) throws Throwable;
+}
+```
+
+(尽管通常的对象适用于字段拦截，并且Spring不太可能实现，Spring的API设计允许先于字段前置通知？[Spring’s API design would allow for field before advice, although the usual objects apply to field interception and it is unlikely for Spring to ever implement it.])
+
+请注意，返回类型为void。通知可以在联接点执行之前插入自定义行为，但不能更改返回值。如果前置通知引发异常，它将中止拦截器链的进一步执行。异常会传播回拦截链。如果未检查或在调用的方法的签名上，则将其直接传递给客户端。否则，它将被AOP代理包装在未经检查的异常中。
+
+以下示例显示了Spring中的前置通知，该通知计算所有方法调用：
+
+```java
+public class CountingBeforeAdvice implements MethodBeforeAdvice {
+
+    private int count;
+
+    public void before(Method m, Object[] args, Object target) throws Throwable {
+        ++count;
+    }
+
+    public int getCount() {
+        return count;
+    }
+}
+```
+
+> 前置通知可以与被任何切入点使用。
+
+#### 异常通知
+
+如果联接点引发异常，则在联接点返回之后调用异常通知。  Spring提供类型化的异常通知(typed throws advice)。请注意，这意味着*org.springframework.aop.ThrowsAdvice*接口不包含任何方法。它是一个标记接口，用于标识给定的对象实现了一个或多个类型的异常通知方法。这些应采用以下形式：
+
+```java
+afterThrowing([Method, args, target], subclassOfThrowable)
+```
+
+仅最后一个参数是必需的。方法签名可以具有一个或四个变量，具体取决于通知方法是否对该方法和变量感兴趣。接下来的两个清单显示了作为引发通知示例的类。
+
+如果引发RemoteException(包括从子类)，则调用以下通知：
+
+```java
+public class RemoteThrowsAdvice implements ThrowsAdvice {
+
+    public void afterThrowing(RemoteException ex) throws Throwable {
+        // Do something with remote exception
+    }
+}
+```
+
+与前面的通知不同，下一个示例声明了四个参数，以便可以访问被调用的方法，方法参数和目标对象。如果抛出ServletException，则调用以下通知：
+
+```java
+public class ServletThrowsAdviceWithArguments implements ThrowsAdvice {
+
+    public void afterThrowing(Method m, Object[] args, Object target, ServletException ex) {
+        // Do something with all arguments
+    }
+}
+```
+
+最后一个示例说明如何在处理RemoteException和ServletException的单个类中使用这两种方法。可以在单个类中组合任意数量的引发建议方法。以下清单显示了最后一个示例：
+
+```java
+public static class CombinedThrowsAdvice implements ThrowsAdvice {
+
+    public void afterThrowing(RemoteException ex) throws Throwable {
+        // Do something with remote exception
+    }
+
+    public void afterThrowing(Method m, Object[] args, Object target, ServletException ex) {
+        // Do something with all arguments
+    }
+}
+```
+
