@@ -241,7 +241,7 @@ public class CountingBeforeAdvice implements MethodBeforeAdvice {
 }
 ```
 
-> 前置通知可以与被任何切入点使用。
+> 前置通知可以被任何切入点使用。
 
 #### 异常通知
 
@@ -275,7 +275,7 @@ public class ServletThrowsAdviceWithArguments implements ThrowsAdvice {
 }
 ```
 
-最后一个示例说明如何在处理RemoteException和ServletException的单个类中使用这两种方法。可以在单个类中组合任意数量的引发建议方法。以下清单显示了最后一个示例：
+最后一个示例说明如何在处理RemoteException和ServletException的单个类中使用这两种方法。可以在单个类中组合任意数量的引发通知方法。以下清单显示了最后一个示例：
 
 ```java
 public static class CombinedThrowsAdvice implements ThrowsAdvice {
@@ -289,4 +289,149 @@ public static class CombinedThrowsAdvice implements ThrowsAdvice {
     }
 }
 ```
+
+如果异常通知方法本身引发异常，则它将覆盖原始异常(也就是说，它将更改引发给用户的异常)。重写异常通常是RuntimeException，它与任何方法签名都兼容。但是，如果异常通知方法抛出一个已检查的异常，则它必须与目标方法的已声明异常匹配，因此在某种程度上与特定的目标方法签名耦合。不要抛出与目标方法签名不兼容的未声明的检查异常！
+
+> 异常通知可以与任何切入点一起使用。
+
+#### 最终通知
+
+Spring中的最终通知必须实现*org.springframework.aop.AfterReturningAdvice*接口，以下清单显示：
+
+```java
+public interface AfterReturningAdvice extends Advice {
+
+    void afterReturning(Object returnValue, Method m, Object[] args, Object target)
+            throws Throwable;
+}
+```
+
+最终通知可以访问返回值(无法修改)，调用的方法，方法的参数和目标。
+
+最终通知后的以下内容将计数所有未引发异常的成功方法调用：
+
+```java
+public class CountingAfterReturningAdvice implements AfterReturningAdvice {
+
+    private int count;
+
+    public void afterReturning(Object returnValue, Method m, Object[] args, Object target)
+            throws Throwable {
+        ++count;
+    }
+
+    public int getCount() {
+        return count;
+    }
+}
+```
+
+此通知不会更改执行路径。如果抛出异常，则会将其抛出拦截器链，而不是返回值。
+
+> 最终通知可以与任何切入点一起使用。
+
+#### 引入增强
+
+Spring将引入增强(Intruduction Advice)视为一种特殊的拦截通知。
+
+引入需要实现了以下接口的IntroductionAdvisor和IntroductionInterceptor：
+
+```java
+public interface IntroductionInterceptor extends MethodInterceptor {
+
+    boolean implementsInterface(Class intf);
+}
+```
+
+从AOP Alliance MethodInterceptor接口继承的invoke()方法必须实现引入。也就是说，如果被调用的方法在引入的接口上，则引入拦截器负责处理方法调用，不能调用proceed()。
+
+引入增强不能与任何切入点一起使用，因为它仅适用于类，而不适用于方法级别。你只能通过IntroductionAdvisor使用引入增强，它具有以下方法：
+
+```java
+public interface IntroductionAdvisor extends Advisor, IntroductionInfo {
+
+    ClassFilter getClassFilter();
+
+    void validateInterfaces() throws IllegalArgumentException;
+}
+
+public interface IntroductionInfo {
+
+    Class<?>[] getInterfaces();
+}
+```
+
+没有MethodMatcher，因此没有与引入增强相关的Pointcut。只有类过滤是合乎逻辑的。
+
+getInterfaces()方法返回此advisor引入的接口。
+
+在内部使用validateInterfaces()方法来查看引入的接口是否可以由配置的IntroductionInterceptor实现。
+
+考虑一下Spring测试套件中的一个示例，并假设我们想为一个或多个对象引入以下接口：
+
+```java
+public interface Lockable {
+    void lock();
+    void unlock();
+    boolean locked();
+}
+```
+
+这说明了混合。我们希望能够将通知对象强制转换为Lockable，无论它们的类型如何，并调用lock和unlock方法。如果我们调用lock()方法，我们希望所有的setter方法都抛出一个LockedException。因此，我们可以添加一个切面，使对象在不了解对象的情况下不可变：AOP的一个很好的例子。
+
+首先，我们需要一个IntroductionInterceptor来完成繁重的工作。在这种情况下，我们扩展了*org.springframework.aop.support.DelegatingIntroductionInterceptor*便利类。我们可以直接实现IntroductionInterceptor，但是在大多数情况下，最好使用DelegatingIntroductionInterceptor。
+
+DelegatingIntroductionInterceptor旨在将引入的接口的实际实现委派给委派，从而隐藏使用侦听的方式。你可以使用构造函数参数将委托设置为任何对象。默认委托(使用无参数构造函数时)是这个。因此，在下一个示例中，委托是DelegatingIntroductionInterceptor的LockMixin子类。给定一个委托(默认情况下为本身)，DelegatingIntroductionInterceptor实例将查找由委托实现的所有接口(IntroductionInterceptor除外)，并支持针对其中任何一个的介绍。诸如LockMixin的子类可以调用preventInterface(Class  intf)方法来禁止不应公开的接口。但是，无论IntroductionInterceptor准备支持多少个接口，IntroductionAdvisor都会使用控件来实际公开哪些接口。引入的接口隐藏了目标对同一接口的任何实现。
+
+因此，LockMixin扩展了DelegatingIntroductionInterceptor并实现了Lockable本身。超类自动选择可支持Lockable的引入，因此我们不需要指定它。我们可以通过这种方式引入任意数量的接口。
+
+注意锁定实例变量的使用。这有效地将附加状态添加到目标对象中保存的状态。
+
+下面的示例显示示例LockMixin类：
+
+```java
+public class LockMixin extends DelegatingIntroductionInterceptor implements Lockable {
+
+    private boolean locked;
+
+    public void lock() {
+        this.locked = true;
+    }
+
+    public void unlock() {
+        this.locked = false;
+    }
+
+    public boolean locked() {
+        return this.locked;
+    }
+
+    public Object invoke(MethodInvocation invocation) throws Throwable {
+        if (locked() && invocation.getMethod().getName().indexOf("set") == 0) {
+            throw new LockedException();
+        }
+        return super.invoke(invocation);
+    }
+
+}
+```
+
+通常，你无需重写invoke()方法。通常足以满足DelegatingIntroductionInterceptor实现(如果引入了方法，则调用委托方法，否则进行到连接点)。在当前情况下，我们需要添加一个检查：如果处于锁定模式，则不能调用任何setter方法。
+
+所需的引入仅需要保存一个独特的LockMixin实例并指定所引入的接口(在这种情况下，仅是Lockable)。一个更复杂的示例可能引用了引入拦截器(将被定义为原型)。在这种情况下，没有与LockMixin相关的配置，因此我们使用new创建它。以下示例显示了我们的LockMixinAdvisor类：
+
+```java
+public class LockMixinAdvisor extends DefaultIntroductionAdvisor {
+
+    public LockMixinAdvisor() {
+        super(new LockMixin(), Lockable.class);
+    }
+}
+```
+
+我们可以非常简单地应用此advisor程序，因为它不需要配置。  (但是，如果没有IntroductionAdvisor，则无法使用IntroductionInterceptor。)与Introduction一样，advisor必须是按实例的，因为它是有状态的。对于每个通知对象，我们需要一个LockMixinAdvisor实例，因此需要一个LockMixin实例。advisor程序包含通知对象状态的一部分。
+
+我们可以像其他任何advisor一样，通过使用Advised.addAdvisor()方法或XML配置中的(推荐方式)以编程方式应用此advisor。下面讨论的所有代理创建选择(包括“自动代理创建器”)都可以正确处理介绍和有状态的混合。
+
+## Spring中的顾问(Advisor)API
 
