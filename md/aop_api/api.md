@@ -435,3 +435,14 @@ public class LockMixinAdvisor extends DefaultIntroductionAdvisor {
 
 ## Spring中的顾问(Advisor)API
 
+在Spring中，顾问程序是一个切面，仅包含与切入点表达式关联的单个通知对象。
+
+除了引介的特殊情况外，任何顾问都可以与任何通知一起使用。  *org.springframework.aop.support.DefaultPointcutAdvisor*是最常用的顾问类。它可以与MethodInterceptor，BeforeAdvice或ThrowsAdvice一起使用。
+
+可以在同一AOP代理中的Spring中混合使用顾问和通知类型。例如，你可以在一个代理配置中使用对环绕通知，异常通知以及前置通知的拦截。 Spring自动创建必要的拦截器链。
+
+## 使用ProxyFactoryBean创建AOP代理
+
+如果你将Spring  IoC容器(ApplicationContext或BeanFactory)用于你的业务对象(应该如此！)，则要使用Spring的AOP  FactoryBean实现之一。 (请记住，工厂bean引入了一个间接层，允许它创建其他类型的对象。)
+
+> 看到这里完全不知道这是什么意思，翻下去估计我都会蒙了，这里就先停一下。
