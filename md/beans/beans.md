@@ -7,13 +7,17 @@
 
 其中最重要的是Spring框架的控制反转（IoC）容器。
 
-对Spring框架的IoC容器有了了解之后将全面介绍Spring的面向切面编程（AOP）技术。Spring框架拥有自己的AOP框架，该框架拥有易于理解的概念并且可以解决Java企业编程中大部分难题。
+对Spring框架的IoC容器有了了解之后将全面介绍Spring的面向切面编程（AOP）技术。Spring框架拥有自己的AOP框架，该框架拥有易于理解的概念同时可以解决Java企业编程中大部分难题。
 
 ## Spring IoC容器和Bean
 
 本篇介绍控制反转原理。
 
-控制反转是定义对象依赖关系的过程，只有通过构造器参数、工厂方法参数或者对象实例化后设置的属性以及从工厂方法返回。之后容器在程序创建bean的时候将bean所需要的依赖注入给bean。这个过程也就是为何会被称为控制反转的原因，程序通过直接使用构造器或者注入服务器定位器模式<sup>*</sup>自己控制实例化或者依赖的定位。
+控制反转是定义对象依赖关系的过程，譬如通过构造器参数，工厂方法参数或者对象实例化后进行设值。
+
+> 原文：It is a process whereby objects define their dependencies (that is, the other objects they work with) only through constructor arguments, arguments to a factory method, or properties that are set on the object instance after it is constructed or returned from a factory method. 
+
+之后容器在程序创建bean的时候将bean所需要的依赖注入给bean。这个过程也就是为何会被称为控制反转的原因，程序通过直接使用构造器或者注入服务器定位器模式<sup>*</sup>自己控制实例化或者依赖的定位。
 
 > 译者注:服务定位器模式（Service Locator Pattern）用在我们想使用 JNDI 查询定位各种服务的时候。考虑到为某个服务查找 JNDI 的代价很高，服务定位器模式充分利用了缓存技术。在首次请求某个服务时，服务定位器在 JNDI 中查找服务，并缓存该服务对象。当再次请求相同的服务时，服务定位器会在它的缓存中查找，这样可以在很大程度上提高应用程序的性能。
 >
@@ -23,10 +27,10 @@
 
 - 与Spring AOP更方便的集成
 - 消息资源处理（多用于国际化）
-- 活动发布
+- 事件发布
 - 应用层特定的上下文，例如Web应用程序中使用的WebApplicationContext
 
-简而言之，BeanFactory提供了配置框架以及基本功能，而ApplicationContext则添加了很多企业级开发的功能。AppliationContext是BeanFactory的完整超集(大概是说ApplicationContext功能比BeanFacotry丰富很多)。如果想了解更多关于BeanFactory替代ApplicationContext信息的请移步[这里](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-beanfactory )。
+简而言之，BeanFactory提供了配置框架以及基本功能，而ApplicationContext则添加了很多企业级开发的功能。AppliationContext是BeanFactory的完整超集(大概是说ApplicationContext功能比BeanFacotry丰富很多)。如果想了解更多关于使用BeanFactory替代ApplicationContext信息的请移步[这里](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-beanfactory )。
 
 在Spring中,构成应用程序主干并由Sprng IoC容器管理的对象称之为bean。bean是由Spring IoC容器实例化、组装以及以其他方式管理的对象，否则，bean与一般对象无异。bean及其之间的依赖关系通过配置的元数据所反映。
 
@@ -36,15 +40,21 @@
 
 Spring提供了ApplicationContext接口的几种实现。在独立应用程序中，通常会创建ClassPathXmlApplicationContext或FileSystemXmlApplicationContext的实例。尽管XML是定义配置元数据的传统格式，但是还是可以通过提供少量XML配置来声明性地启用对一些其他元数据格式的支持，从而指示容器将Java注解或代码用作元数据格式。
 
-在大多数应用场景中，不需要显式用户代码即可实例化Spring IoC容器的一个或多个实例。例如，在Web应用程序场景中，应用程序的web.xml文件中简单的8行（大约）样板通常就足够了（请参阅[Convenient ApplicationContext Instantiation for Web Applications](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#context-create )）。如果使用Spring Tools for Eclipse（Eclipse支持的开发环境），则只需单击几下鼠标或击键即可轻松创建此样板配置。
+在大多数应用场景中，不需要显式用户代码即可实例化Spring IoC容器的一个或多个实例。例如，在Web应用程序场景中，应用程序的web.xml文件中简单的8行（大约）样板通常就足够了（请参阅[Convenient ApplicationContext Instantiation for Web Applications](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#context-create )）。如果使用Spring Tools for Eclipse（Eclipse支持的开发环境），则只需单击几下鼠标即可轻松创建此样板配置。
 
-下图显示了Spring的工作原理的高级视图。你的应用程序类与配置元数据结合在一起，以便在创建和初始化ApplicationContext之后，你将拥有一个完全配置且可执行的系统或应用程序。
+下图显示了Spring的工作原理的高级视图。你的应用程序类与配置元数据结合在一起，在创建和初始化ApplicationContext之后，你将拥有一个完全配置且可执行的系统或应用程序。
 
 ![](https://www.hellooooo.top/image/blog/2020/05/spring/container-magic.png)
 
 ### 配置元数据
 
-如上图所示，Spring IoC容器使用一种形式的配置元数据。这个配置元数据表示作为应用程序开发人员告诉Spring容器如何在应用程序中实例化，配置和组装对象。
+如上图所示，Spring IoC容器使用一种形式的配置元数据（Configuration Metadata）。
+
+> 大概是说，不管是XML或者Annotation以及Java Code都可以表示出同一类型的配置信息，使用他们所表现出的是同一种配置元数据，效果是等同的。
+
+> 原文：As the preceding diagram shows, the Spring IoC container consumes a form of configuration metadata.
+
+这个配置元数据表示作为应用程序开发人员告诉Spring容器如何在应用程序中实例化，配置和组装对象。
 
 传统上，配置元数据以简单直观的XML格式提供，这是本章大部分内容用来传达Spring IoC容器的关键概念和功能的内容。
 
@@ -108,7 +118,7 @@ ApplicationContext context = new ClassPathXmlApplicationContext("services.xml", 
 </beans>
 ~~~
 
-在前面的示例中，外部bean定义是从三个文件加载的：services.xml，messageSource.xml和themeSource.xml。所有位置路径都相对于进行导入的定义文件的位置，因此，services.xml必须与进行导入的文件位于同一目录或类路径位置，而messageSource.xml和themeSource.xml必须位于该位置下方的resource文件夹。如你所见，斜杠被忽略了。但是，鉴于这些路径是相对的，最好不要使用任何斜线。根据Spring Schema，导入的文件的内容（包括\<beans />元素）必须是有效的XML bean定义。
+在前面的示例中，外部bean定义是从三个文件加载的：services.xml，messageSource.xml和themeSource.xml。所有位置路径都相对于进行导入的定义文件的位置，因此，services.xml必须与进行导入的文件位于同一目录或类路径位置，而messageSource.xml和themeSource.xml必须位于该位置下方的resource文件夹。如你所见，斜杠被忽略了。但是，鉴于这些路径是相对的，最好不要使用任何斜线。根据Spring架构，导入的文件的内容（包括\<beans />元素）必须是有效的XML bean定义。
 
 > 最好不要使用".."操作符访问父路径资源，尤其是在使用"classpath"时，它可能会改变程序读取文件的属性，造成不必要的麻烦。
 >
@@ -138,7 +148,7 @@ beans {
 }
 ~~~
 
-这种配置样式在很大程度上等同于XML bean定义，甚至支持Spring的XML配置名称空间。它还允许通过importbeans指令导入XML bean定义文件。
+这种配置样式在很大程度上等同于XML bean定义，甚至支持Spring的XML配置名称空间。它还允许通过importBeans指令导入XML bean定义文件。
 
 ### 使用容器
 
@@ -211,14 +221,14 @@ Spring IoC容器管理一个或多个bean。这些bean是使用你提供给容�
 除了包含有关如何创建特定bean的信息的bean定义之外，ApplicationContext实现还允许注册在容器外部（由用户）创建的现有对象。这是通过getBeanFactory()方法访问ApplicationContext的BeanFactory来完成的，该方法返回BeanFactory的实现类
 DefaultListableBeanFactory实现。 DefaultListableBeanFactory通过registerSingleton（..）和registerBeanDefinition（..）方法支持此注册。但是，典型的应用程序只能与通过常规元数据定义的bean一起使用。
 
-> bean元数据和手动提供的单例实例需要尽早注册，以便容器在自动装配和其他步骤中正确地推理它们。虽然在某种程度上Spring支持覆盖现有元数据和现有单例实例，但官方不支持在运行时（与对工厂的实时访问同时）对新bean的注册，可能导致并发访问异常，bean容器中的状态不一致等问题。
+> bean元数据和手动提供的单例实例需要尽早注册，以便容器在自动装配和其他步骤中正确地推理它们。虽然在某种程度上Spring支持覆盖现有元数据和现有单例实例，但官方不支持在运行时（与对工厂的实时访问同时）对新bean的注册，这可能导致并发访问异常，bean容器中的状态不一致等问题。
 
 ### Bean命名
 
 每个bean具有一个或多个标识符。这些标识符在承载bean的容器内必须是唯一的。一个bean通常只有一个标识符。但是，如果需要多个标识符，则可以设置别名。
 
 在基于XML的配置元数据中，可以使用id属性和name属性来指定bean标识符。 
-id属性精确指定一个id。通常，这些名称是字母数字（“ mybean”，“ someService”等），但它们也可以包含特殊字符。如果要为bean引入其他别名，还可以在name属性中指定它们，并用逗号（,），分号（;）或空格分隔。Spring历史上，在3.1之前的版本中，id属性定义为xsd：ID类型，该类型限制了可能的字符。从3.1开始，它被定义为xsd：string类型。需要注意，beanID唯一性不再由XML解析器执行，但仍由容器强制保证。
+id属性精确指定一个id。通常，这些名称是字母数字（“ mybean”，“ someService”等），但它们也可以包含特殊字符。如果要为bean引入其他别名，还可以在name属性中指定它们，并用逗号（,），分号（;）或空格分隔。Spring历史上，在3.1之前的版本中，id属性定义为xsd：ID类型，该类型限制了可能的字符。从3.1开始，它被定义为xsd：string类型。需要注意，bean ID唯一性不再由XML解析器执行，但仍由容器强制保证。
 
 你也可以不提供bean的名称或ID。如果未明确提供名称或ID，则容器将为该bean生成一个唯一的名称。但是，如果要通过名称引用该bean，则必须通过使用ref元素或服务定位器样式查找，你必须提供一个名称。不提供名称的动机与使用内部bean和自动装配合作有关。
 
@@ -248,8 +258,7 @@ id属性精确指定一个id。通常，这些名称是字母数字（“ mybean
 
 在bean定义中，可以使用由id属性指定的一个名称和name属性中任意数量的其他名称的组合来为bean提供多个名称。这些名称可以是同一个bean的等效别名，并且在某些情况下很有用，例如使应用中的多个组件通过bean名字指向一个通用的依赖。
 
-但是，在实际定义bean的地方指定所有别名并不总是足够的。有时需要为在别处定义的bean引入别名。这在大型系统中通常是这种情况，在大型系统中，配置分配在每个子系统之间，每个子系统都有自己的对象定义集。在基于XML的配置元数据中，可以使用\<alias
-/>元素来完成此操作。以下示例显示了如何执行此操作：
+但是，在实际定义bean的地方指定所有别名并不总是足够的。有时需要为在别处定义的bean引入别名。这在大型系统中通常是这种情况，在大型系统中，配置分配在每个子系统之间，每个子系统都有自己的对象定义集。在基于XML的配置元数据中，可以使用\<alias/>元素来完成此操作。以下示例显示了如何执行此操作：
 
 ~~~java
 <alias name="fromName" alias="toName"/>
@@ -272,7 +281,7 @@ id属性精确指定一个id。通常，这些名称是字母数字（“ mybean
 
 bean定义本质上是创建一个或多个对象的方法。当被请求时，容器将查看命名bean的方法，并使用该bean定义封装的配置元数据来创建（或获取）实际对象。
 
-如果使用基于XML配置元数据，则在\<Bean/>元素的class属性中指定要实例化的对象的类型（或类）。这个class属性（在内部是BeanDefinition实例的Class属性）通常是必需的。
+如果使用基于XML配置元数据，则在\<bean/>元素的class属性中指定要实例化的对象的类型（或类）。这个class属性（在内部是BeanDefinition实例的Class属性）通常是必需的。
 （有关异常，请参见[Instantiation by Using an Instance Factory Method](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-factory-class-instance-factory-method) 以及[Bean Definition Inheritance](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-child-bean-definitions)。）可以通过以下两种方式之一使用Class属性：
 
 - 通常，在容器本身通过反射调用其构造函数直接创建bean的情况下，指定要构造的bean类，这在某种程度上等同于使用new运算符的Java代码。
@@ -284,7 +293,7 @@ bean定义本质上是创建一个或多个对象的方法。当被请求时，�
 
 当通过构造方法创建一个bean时，所有普通类都可以被Spring使用并与之兼容。也就是说，正在开发的类不需要实现任何特定的接口或以特定的方式进行编码。只需指定bean类就足够了。但是，根据用于该特定bean的IoC的类型，你可能需要一个默认（空）构造函数。
 
-Spring IoC容器几乎可以管理你要管理的任何类。它不仅限于管理真正的Javabean。大多数Spring用户更喜欢实际的Java bean，它们仅具有默认（无参数）构造函数，并适当的setter和getter。你还可以在容器中具有更多奇特的非bean样式类。例如，如果你需要使用绝对不符合Java bean规范的旧式连接池，Spring也可以对其进行管理。
+Spring IoC容器几乎可以管理你要管理的任何类。它不仅限于管理真正的JavaBean。大多数Spring用户更喜欢实际的JavaBean，它们仅具有默认（无参数）构造函数，并适当的setter和getter。你还可以在容器中具有更多奇特的非bean样式类。例如，如果你需要使用绝对不符合Java bean规范的旧式连接池，Spring也可以对其进行管理。
 
 使用基于XML的配置元数据，可以如下指定bean类：
 
@@ -308,6 +317,8 @@ Spring IoC容器几乎可以管理你要管理的任何类。它不仅限于管�
 ~~~
 
 以下示例展示可与前面的bean定义一起使用的类：
+
+========2021年4月12日
 
 ~~~java
 public class ClientService {
