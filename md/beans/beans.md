@@ -318,8 +318,6 @@ Spring IoC容器几乎可以管理你要管理的任何类。它不仅限于管�
 
 以下示例展示可与前面的bean定义一起使用的类：
 
-========2021年4月12日
-
 ~~~java
 public class ClientService {
     private static ClientService clientService = new ClientService();
@@ -405,7 +403,9 @@ public class DefaultServiceLocator {
 
 确定特定bean的运行时类型并非易事。 bean元数据定义中的指定类只是初始类引用，可能与声明的工厂方法结合使用，或者是FactoryBean类，这可能导致bean的运行时类型不同，或者在实例的情况下完全不进行设值工厂方法（通过指定的factory-bean名称解析）。此外，AOP代理可以使用基于接口的代理包装bean实例，而目标bean的实际类型（仅是其实现的接口）的暴露程度有限。
 
-找出特定bean的实际运行时类型的推荐方法是调用指定bean名称的BeanFactory.getType。这考虑了以上所有情况，并返回了BeanFactory.getbean针对同一bean名称返回的对象类型。
+> 原文：The runtime type of a specific bean is non-trivial to determine. A specified class in the bean metadata definition is just an initial class reference, potentially combined with a declared factory method or being a `FactoryBean` class which may lead to a different runtime type of the bean, or not being set at all in case of an instance-level factory method (which is resolved via the specified `factory-bean` name instead). Additionally, AOP proxying may wrap a bean instance with an interface-based proxy with limited exposure of the target bean’s actual type (just its implemented interfaces).
+
+找出特定bean的实际运行时类型的推荐方法是调用指定bean名称的BeanFactory.getType。这考虑了以上所有情况，并返回了BeanFactory.getBean针对同一bean名称返回的对象类型。
 
 ## 依赖
 
@@ -413,9 +413,9 @@ public class DefaultServiceLocator {
 
 ### 依赖注入( Dependency Injection)
 
-依赖注入（DI）是一个过程，通过该过程，对象仅通过构造函数参数，工厂方法的参数或在创建对象实例后在对象实例上设置的属性来定义其依赖关系（即，与它们一起工作的其他对象）。从工厂方法返回。然后，容器在创建bean时注入那些依赖项。此过程从根本上讲是通过使用类的直接构造或服务定位器模式来控制bean自身依赖关系的实例化或位置的bean本身的逆过程（因此称为Inversion of Control）。
+依赖注入（DI）是一个过程，通过该过程，对象仅通过构造函数参数，工厂方法的参数或在创建对象实例后在对象实例上设置属性来定义其依赖关系（即，与它们一起工作的其他对象）。从工厂方法返回。然后，容器在创建bean时注入那些依赖项。此过程从根本上讲是通过使用类的直接构造或服务定位器模式来控制bean自身依赖关系的实例化的bean本身的逆过程（因此称为Inversion of Control，控制反转）。
 
-使用依赖注入，代码更加简洁，当为对象提供依赖项时，解耦会更有效。该对象不查找其依赖项，并且不知道依赖项的位置或类。结果，你的类变得更易于测试，尤其是当依赖项依赖于接口或抽象基类时，它们允许在单元测试中使用存根(stub)或模拟实现。
+使用依赖注入，代码更加简洁，当为对象提供依赖项时，解耦会更有效。该对象不查找其依赖项，并且不知道依赖项的位置或类。因此，你的类变得更易于测试，尤其是当依赖项依赖于接口或抽象基类时，它们允许在单元测试中使用存根(stub)或模拟实现。
 
 DI存在两个主要变体: [Constructor-based dependency injection](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-constructor-injection) 和 [Setter-based dependency injection](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-setter-injection).
 
@@ -571,20 +571,20 @@ ApplicationContext支持其管理的bean基于构造函数和基于setter的依�
 >
 > Spring团队通常提倡构造函数注入，因为它可以让应用程序组件实现为不可变对象，并确保所需的依赖项不为null。此外，构造函数注入的组件始终以完全初始化的状态返回到客户端（调用）代码。附带说明一下，大量的构造函数自变量是一种不好的代码写法，这表明该类可能承担了太多的职责，应该对其进行重构以更好地解决关注点分离问题。
 >
-> Setter注入主要应仅用于可以在类中分配合理的默认值的可选依赖项。否则，必须在代码使用依赖项的任何地方执行非空检查。 setter注入的一个好处是，setter方法可使该类的对象在以后重新配置或重新注入。因此，通过JMX Mbean进行管理是用于setter注入的引人注目的用例。
+> setter注入主要应仅用于可以在类中分配合理的默认值的可选依赖项。否则，必须在代码使用依赖项的任何地方执行非空检查。 setter注入的一个好处是，setter方法可使该类的对象在以后重新配置或重新注入。因此，通过JMX Mbean进行管理是用于setter注入的引人注目的用例。
 >
-> 使用最适合特定类的DI风格。有时，在处理没有源代码的第三方类时，将为你做出选择。例如，如果第三方类未公开任何setter方法，则构造函数注入可能是DI的唯一可用形式。
+> 使用对特定类最有意义的DI样式。有时，在处理没有源代码的第三方类时，将为你做出选择。例如，如果第三方类未公开任何setter方法，则构造函数注入可能是DI的唯一可用形式。
 
 #### 依赖解析过程
 
 容器执行bean依赖解析，如下所示：
 
-- 将使用描述所有bean的配置元数据来创建和初始化ApplicationContext。可以通过XML，Java代码或注解指定配置元数据。
+- 将使用描述所有bean的配置元数据来创建和初始化ApplicationContext。可以通过XML，Java代码或注解配置元数据。
 - 对于每个bean，其依赖关系都以属性、构造函数参数或静态工厂方法的参数的形式表示（如果使用它而不是普通的构造函数）。实际创建bean时，会将这些依赖项提供给bean。
 - 每个属性或构造函数参数都是要设置的值的实际定义，或者是对容器中另一个bean的引用。
 - 每个值的属性或构造函数参数都将从其指定的格式转换为该属性或构造函数参数的实际类型。默认情况下，Spring可以将以字符串格式提供的值转换为所有内置类型，例如int，long，String，boolean等。
 
-在创建容器时，Spring容器会验证每个bean的配置。但是，在实际创建bean之前，不会设置bean属性本身。创建容器时，将创建具有单例作用域并设置为预先实例化（默认）的bean。范围在 [Bean Scopes](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-factory-scopes)中定义。否则，仅在请求时才创建bean。创建bean时可能会导致创建一个bean图，也就是当bean依赖的依赖其他依赖（等等复杂的依赖）。注意，这些依赖项之间的解析不匹配可能会出现得很晚——也就是说，在首次创建受影响的bean时。
+在创建容器时，Spring容器会验证每个bean的配置。但是，在实际创建bean之前，不会设置bean属性本身。创建容器时，将创建具有单例作用域并设置为预先实例化（默认）的bean。范围在 [Bean Scopes](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-factory-scopes)中定义。否则，仅在请求时才创建bean。创建bean时可能会导致创建一个bean图，也就是当bean的依赖依赖其他依赖（等等复杂的依赖）。注意，这些依赖项之间的解析不匹配可能会出现得很晚——也就是说，在创建首次受影响的bean时可能才会出现。
 
 > 循环依赖
 >
@@ -596,7 +596,7 @@ ApplicationContext支持其管理的bean基于构造函数和基于setter的依�
 >
 > 与典型情况（没有循环依赖关系）不同，bean A和bean B之间的循环依赖关系迫使其中一个bean在完全初始化之前被注入另一个bean（经典的“鸡与蛋”场景）。
 
-通常，你可以信任Spring会做正确的事。它在容器加载时检测配置问题，例如对不存在的bean的引用和循环依赖问题。在实际创建bean时，Spring设置属性并尽可能晚地解决依赖关系。这意味着如果创建该对象或其依赖项之一时出现问题，正确加载了的Spring容器以后可以在你请求对象时生成异常-例如，由于缺少或无效，bean引发异常属性。这可能会延迟某些配置问题的可见性，这就是为什么默认情况下ApplicationContext实现会预先实例化单例bean的原因。在实际需要使用这些bean之前要花一些前期时间和内存，你会在创建ApplicationContext时发现配置问题，而不是稍后。你仍然可以覆盖此默认行为，以便单例bean延迟初始化，而不是预先实例化。
+通常，你可以信任Spring会做正确的事。它在容器加载时检测配置问题，例如对不存在的bean的引用和循环依赖问题。在实际创建bean时，Spring设置属性并尽可能晚地解决依赖关系。这意味着如果创建该对象或其依赖项之一时出现问题，正确加载了的Spring容器以后可以在你请求对象时生成异常。例如，由于缺少或无效，bean引发异常属性。这可能会延迟某些配置问题的可见性，这就是为什么默认情况下ApplicationContext实现会预先实例化单例bean的原因。在实际需要使用这些bean之前要花一些前期时间和内存，你会在创建ApplicationContext时发现配置问题，而不是稍后。你仍然可以覆盖此默认行为，以便单例bean延迟初始化，而不是预先实例化。
 
 如果不存在循环依赖关系，则在将一个或多个协作bean注入到依赖bean中时，每个协作bean都将在注入到依赖bean中之前被完全配置。这意味着，如果bean A依赖于bean B，则Spring IoC容器会在对bean A调用setter方法之前完全配置beanB。换句话说，实例化了bean（如果它不是预先实例化的单例），设置其依赖项，并调用相关的生命周期方法（例如 [configured init method](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-factory-lifecycle-initializingbean)或[Initializingbean callback method](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/core.html#beans-factory-lifecycle-initializingbean)）。
 
@@ -683,6 +683,8 @@ public class ExampleBean {
     }
 }
 ```
+
+=========2021年4月13日
 
 bean定义中指定的构造函数参数用作ExampleBean构造函数的参数。
 
